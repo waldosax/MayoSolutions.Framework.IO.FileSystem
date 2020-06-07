@@ -23,7 +23,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="10.2.1" />
-		<PackageReference Include="MayoSolutions.Common" Version="0.0.9" />
+		<PackageReference Include="MayoSolutions.Common" Version="0.0.10" />
 	</ItemGroup>
 
 	<ItemGroup>
