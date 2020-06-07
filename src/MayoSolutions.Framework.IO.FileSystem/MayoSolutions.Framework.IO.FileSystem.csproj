@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;netcoreapp2.1;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
 		<Company>Mayo Solutions</Company>
 		<Authors>Rob Mayo</Authors>
 		<Description>Abstractions for Filesystem</Description>
-		<Version>0.0.1</Version>
+		<Version>0.0.2</Version>
 		<PackageVersion>$(VersionSuffix)</PackageVersion>
 		<PackageId>MayoSolutions.Framework.IO.FileSystem</PackageId>
 		<Title>MayoSolutions.Framework.IO.FileSystem</Title>
