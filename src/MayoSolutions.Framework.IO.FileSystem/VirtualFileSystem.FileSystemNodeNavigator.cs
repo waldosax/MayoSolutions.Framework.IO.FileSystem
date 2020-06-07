@@ -133,7 +133,7 @@ namespace MayoSolutions.Framework.IO
 			public static string[] ParsePath(string path)
 			{
 				List<string> pathNodes = new List<string>();
-				string tmp = string.Copy(path);
+				string tmp = new string(path.ToCharArray());
 				int indexOfDirectorySeparator = tmp.LastIndexOf(Path.DirectorySeparatorChar);
 				while (indexOfDirectorySeparator > 1)
 				{

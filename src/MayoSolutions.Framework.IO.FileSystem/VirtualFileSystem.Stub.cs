@@ -292,11 +292,11 @@ namespace MayoSolutions.Framework.IO
 					{
 						case FileMode.Open:
 						case FileMode.OpenOrCreate:
-							Write(node.Contents);
+							Write(node.Contents, 0, node.Contents.Length);
 							Position = 0L;
 							break;
 						case FileMode.Append:
-							Write(node.Contents);
+							Write(node.Contents, 0, node.Contents.Length);
 							break;
 					}
 				}

@@ -21,7 +21,7 @@ namespace MayoSolutions.Framework.IO
             if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
                 return list.ToArray();
 
-            string current = string.Copy(b);
+            string current = new string(b.ToCharArray());
             while (current.StartsWith(a, StringComparison.OrdinalIgnoreCase))
             {
                 string parent = Path.GetDirectoryName(Path.GetDirectoryName(current)).TrimEnd(slash) + slash;
@@ -61,7 +61,7 @@ namespace MayoSolutions.Framework.IO
         public static string[] ParsePath(string path)
         {
             List<string> pathNodes = new List<string>();
-            string tmp = string.Copy(path);
+            string tmp = new string(path.ToCharArray());
             int indexOfDirectorySeparator = tmp.LastIndexOf(Path.DirectorySeparatorChar);
             while (indexOfDirectorySeparator > 1)
             {
