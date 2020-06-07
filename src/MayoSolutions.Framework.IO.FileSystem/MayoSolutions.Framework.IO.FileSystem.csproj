@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netcoreapp2.1;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
 		<Company>Mayo Solutions</Company>
 		<Authors>Rob Mayo</Authors>
 		<Description>Abstractions for Filesystem</Description>
-		<Version>0.0.2</Version>
+		<Version>0.0.3</Version>
 		<PackageVersion>$(VersionSuffix)</PackageVersion>
 		<PackageId>MayoSolutions.Framework.IO.FileSystem</PackageId>
 		<Title>MayoSolutions.Framework.IO.FileSystem</Title>
@@ -23,7 +23,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="10.2.1" />
-		<PackageReference Include="MayoSolutions.Common" Version="0.0.10" />
+		<PackageReference Include="MayoSolutions.Common" Version="0.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>
