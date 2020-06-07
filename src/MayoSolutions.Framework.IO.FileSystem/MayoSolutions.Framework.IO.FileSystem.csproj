@@ -26,9 +26,9 @@
 		<PackageReference Include="MayoSolutions.Common" Version="0.0.6" />
 	</ItemGroup>
 
-	<!--<ItemGroup>
+	<ItemGroup>
 		<Compile Update="VirtualFileSystem.*.cs">
 			<DependentUpon>VirtualFileSystem.cs</DependentUpon>
 		</Compile>
-	</ItemGroup>-->
+	</ItemGroup>
 </Project>
