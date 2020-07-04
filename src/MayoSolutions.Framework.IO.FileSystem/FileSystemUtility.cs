@@ -74,5 +74,23 @@ namespace MayoSolutions.Framework.IO
             return pathNodes.ToArray();
         }
 
+
+        public static string MakeRelative(string path1, string path2)
+        {
+            path1 = path1.TrimEnd(Path.DirectorySeparatorChar);
+            path2 = path2.TrimEnd(Path.DirectorySeparatorChar);
+
+            string x = path1, y = path2;
+            if (path1.Length > path2.Length)
+            {
+                y = path1;
+                x = path2;
+            }
+
+            if (!y.StartsWith(x, StringComparison.OrdinalIgnoreCase))
+                return y;
+
+            return y.Substring(x.Length).TrimStart(Path.DirectorySeparatorChar);
+        }
     }
 }

@@ -89,23 +89,29 @@ namespace MayoSolutions.Framework.IO
 				string srcParentFolder = FileSystemNodeNavigator.GetParentPath(srcFileName);
 				string src = Path.GetFileName(srcFileName);
 
-				string destParentFolder = FileSystemNodeNavigator.GetParentPath(destFileName);
 				destFileName = Path.GetFullPath(Path.Combine(srcParentFolder, destFileName));
+				string destParentFolder = FileSystemNodeNavigator.GetParentPath(destFileName);
 				string dest = Path.GetFileName(destFileName);
 
 				ContainerNode destParent = (ContainerNode)FileSystemNodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
 				ContainerNode srcParent = (ContainerNode)FileSystemNodeNavigator.Get(_volumes, srcParentFolder);
 
 				if (ReferenceEquals(srcParent, destParent))
-				{
-					if (destParent.StringComparer.Equals(src, dest)) return;    // TODO: Throw Exception?
-					destParent.Files[src].Name = dest;
-				}
+                {
+                    if (destParent.StringComparer.Equals(src, dest))
+                        throw new IOException("Source and destination path must be different.");
+
+                    if (destParent.Files.Contains(src))
+                        destParent.Files[src].Name = dest;
+                    else
+                        destParent.Files.Add(new FileNode {Name = dest});
+                }
 				else
 				{
 					FileNode srcFile = srcParent.Files[src];
 					FileNode destFile = destParent.Files[dest];
 
+					// TODO: if (srcFile == null) throw new IOException("Cannot create a file when that file already exists.");
 					if (destFile != null) throw new IOException("Cannot create a file when that file already exists.");
 
 					destFile = srcFile;
