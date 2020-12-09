@@ -1,12 +1,12 @@
-name: publish to nuget
+name: Publish to nuget
 on:
   push:
     branches:
       - master # Default release branch
 jobs:
   publish:
-    name: build, pack & publish
-    runs-on: ubuntu-latest
+    name: Build, pack & publish
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -16,7 +16,7 @@ jobs:
       #     dotnet-version: 3.1.200
 
       # Publish
-      - name: publish on version change
+      - name: Publish on version change
         id: publish_nuget
         uses: rohith/publish-nuget@v2
         with:
