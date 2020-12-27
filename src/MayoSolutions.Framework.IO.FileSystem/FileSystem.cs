@@ -7,6 +7,11 @@ namespace MayoSolutions.Framework.IO
 {
     public class FileSystem : IFileSystem
     {
+        private class DriveStub : IDrive
+        {
+            public string[] GetDrives() => DriveInfo.GetDrives().Select(di => di.Name).ToArray();
+        }
+
         private class DirectoryStub : IDirectory
         {
             public void CreateDirectory(string path) => new DirectoryInfo(path).Create();
@@ -82,11 +87,13 @@ namespace MayoSolutions.Framework.IO
         }
 
 
+        public IDrive Drive { get; }
         public IDirectory Directory { get; }
         public IFile File { get; }
 
         public FileSystem()
         {
+            Drive = new DirectoryStub();
             Directory = new DirectoryStub();
             File = new FileStub();
         }

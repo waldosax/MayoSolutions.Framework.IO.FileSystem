@@ -8,7 +8,7 @@ namespace MayoSolutions.Framework.IO
 {
     public partial class VirtualFileSystem
     {
-		private class Stub : IDirectory, IFile
+		private class Stub : IDrive, IDirectory, IFile
 		{
 			private readonly List<VolumeNode> _volumes;
 
@@ -17,9 +17,18 @@ namespace MayoSolutions.Framework.IO
 				_volumes = volumes;
 			}
 
-			#region IDirectory
+            #region IDrive
 
-			void IDirectory.CreateDirectory(string path)
+            public string[] GetDrives()
+            {
+                return _volumes.Select(v => v.Name).ToArray();
+            }
+
+            #endregion
+
+            #region IDirectory
+
+            void IDirectory.CreateDirectory(string path)
 			{
 				FileSystemNodeNavigator.GetOrCreate(_volumes, path, false);
 			}
@@ -321,6 +330,6 @@ namespace MayoSolutions.Framework.IO
 					base.Dispose(disposing);
 				}
 			}
-		}
+        }
 	}
 }

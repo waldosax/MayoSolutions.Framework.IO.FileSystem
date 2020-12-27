@@ -9,10 +9,11 @@ namespace MayoSolutions.Framework.IO
 	// NOTE: Somebody got their recursion hard-on! Oh, wait. It was me.
 	public partial class VirtualFileSystem : IFileSystem
 	{
-		public IDirectory Directory { get; private set; }
-		public IFile File { get; private set; }
+		public IDrive Drive { get; }
+		public IDirectory Directory { get; }
+		public IFile File { get; }
 
-		private List<VolumeNode> _volumes = new List<VolumeNode>();
+		private readonly List<VolumeNode> _volumes;
 
 		private static bool IsOperatingSystemCaseSensitive()
 		{
@@ -30,12 +31,9 @@ namespace MayoSolutions.Framework.IO
 			StringBuilder volumeNameBuffer = new StringBuilder(261);
 			StringBuilder fileSystemNameBuffer = new StringBuilder(261);
 
-			uint volumeSerialNumber, maximumComponentLength;
-			Win32Api.FileSystemFeature fileSystemFlags;
-
-			if (Win32Api.GetVolumeInformation(rootPathName,
-				volumeNameBuffer, 261, out volumeSerialNumber,
-				out maximumComponentLength, out fileSystemFlags,
+            if (Win32Api.GetVolumeInformation(rootPathName,
+				volumeNameBuffer, 261, out _,
+				out _, out var fileSystemFlags,
 				fileSystemNameBuffer, 261))
 			{
 				return (fileSystemFlags | Win32Api.FileSystemFeature.CaseSensitiveSearch) ==
@@ -55,6 +53,7 @@ namespace MayoSolutions.Framework.IO
 		{
 			_volumes = new List<VolumeNode>();
 			Stub stub = new Stub(_volumes);
+			Drive = stub;
 			Directory = stub;
 			File = stub;
 		}
@@ -72,7 +71,7 @@ namespace MayoSolutions.Framework.IO
 		{
 			foreach (string path in paths)
 			{
-				WithFileInternal(path, null, null);
+				WithFileInternal(path, null);
 			}
 			return this;
 		}
