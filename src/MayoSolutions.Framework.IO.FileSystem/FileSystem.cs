@@ -93,7 +93,7 @@ namespace MayoSolutions.Framework.IO
 
         public FileSystem()
         {
-            Drive = new DirectoryStub();
+            Drive = new DriveStub();
             Directory = new DirectoryStub();
             File = new FileStub();
         }
