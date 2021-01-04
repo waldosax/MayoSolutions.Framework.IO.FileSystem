@@ -7,9 +7,56 @@ namespace MayoSolutions.Framework.IO
 {
     public class FileSystem : IFileSystem
     {
+        private static readonly string[] CaseInsensitiveDriveFormats = { "NTFS", "CDFS", "FAT", "FAT32" };
         private class DriveStub : IDrive
         {
             public string[] GetDrives() => DriveInfo.GetDrives().Select(di => di.Name).ToArray();
+            public VolumeInfo GetVolumeInfo(string drive)
+            {
+                if (drive[drive.Length - 1] == Path.VolumeSeparatorChar) drive += Path.DirectorySeparatorChar;
+
+                StringBuilder volumeNameBuffer = new StringBuilder(261);
+                StringBuilder fileSystemNameBuffer = new StringBuilder(261);
+
+                var di = new DriveInfo(drive);
+                var vi = new VolumeInfo
+                {
+                    RootPathName = drive,
+                    IsReady = di.IsReady,
+                    DriveType = di.DriveType,
+                    MappedPathName = di.DriveType == DriveType.Network ? di.RootDirectory.FullName : null
+                };
+
+                if (di.IsReady)
+                {
+                    vi.VolumeLabel = di.VolumeLabel;
+                    vi.AvailableFreeSpace = di.AvailableFreeSpace;
+                    vi.TotalFreeSpace = di.TotalFreeSpace;
+                    vi.TotalSize = di.TotalSize;
+                    vi.DriveFormat = di.DriveFormat;
+                    vi.IsCaseSensitive = CaseInsensitiveDriveFormats.Contains(di.DriveFormat, StringComparer.OrdinalIgnoreCase);
+                }
+
+
+                if (Win32Api.GetVolumeInformation(drive,
+                    volumeNameBuffer, 261, out _,
+                    out _, out var fileSystemFlags,
+                    fileSystemNameBuffer, 261))
+                {
+                    vi.VolumeLabel = !string.IsNullOrWhiteSpace(vi.VolumeLabel)
+                        ? vi.VolumeLabel
+                        : volumeNameBuffer.ToString();
+                    vi.DriveFormat = fileSystemNameBuffer.ToString();
+                    vi.IsCaseSensitive = fileSystemFlags.HasFlag(Win32Api.FileSystemFeature.CaseSensitiveSearch);
+                    vi.IsCompressed = fileSystemFlags.HasFlag(Win32Api.FileSystemFeature.VolumeIsCompressed);
+                    vi.SupportsEncryption = fileSystemFlags.HasFlag(Win32Api.FileSystemFeature.SupportsEncryption);
+                    vi.SupportsCompression = fileSystemFlags.HasFlag(Win32Api.FileSystemFeature.FileCompression);
+                    vi.SupportsHardLinks = fileSystemFlags.HasFlag(Win32Api.FileSystemFeature.SupportsHardLinks);
+                }
+
+                return vi;
+                //throw new IOException($"Volume information for {drive} not found.");
+            }
         }
 
         private class DirectoryStub : IDirectory
