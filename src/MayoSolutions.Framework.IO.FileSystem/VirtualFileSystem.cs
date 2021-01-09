@@ -101,7 +101,7 @@ namespace MayoSolutions.Framework.IO
 
 			string fileName = Path.GetFileName(path);
 			string parentDirectory = FileSystemNodeNavigator.GetParentPath(path);
-			vfs = vfs.AndPhysicalPath(parentDirectory);
+			vfs = vfs.AndPath(parentDirectory);
 
 			ContainerNode parent = (ContainerNode)FileSystemNodeNavigator.Get(vfs._volumes, parentDirectory);
 			FileNode fileNode = parent.Files[fileName];
@@ -182,8 +182,19 @@ namespace MayoSolutions.Framework.IO
 		private static void CreateChildrenFromPhysicalPath(DirectoryInfo di, ContainerNode parent)
 		{
 			if (!di.Exists) return;
+			//
 
-			FileInfo[] files = di.GetFiles();
+			FileInfo[] files;
+            try
+            {
+                files= di.GetFiles();
+            }
+            catch (IOException e)
+            {
+				if (e.Message.StartsWith("The network path was not found.")) files = new FileInfo[0];
+                else throw;
+            }
+
 			foreach (FileInfo fi in files)
 			{
 				FileNode fileNode = new FileNode
@@ -194,7 +205,17 @@ namespace MayoSolutions.Framework.IO
 				parent.Files.Add(fileNode);
 			}
 
-			DirectoryInfo[] directories = di.GetDirectories();
+			DirectoryInfo[] directories;
+            try
+            {
+                directories = di.GetDirectories();
+            }
+			catch (IOException e)
+            {
+                if (e.Message.StartsWith("The network path was not found.")) directories = new DirectoryInfo[0];
+                else throw;
+            }
+
 			foreach (DirectoryInfo child in directories)
 			{
 				DirectoryNode directoryNode = new DirectoryNode(child.Name, parent.StringComparer)
