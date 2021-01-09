@@ -119,8 +119,27 @@ namespace MayoSolutions.Framework.IO
 			return vfs;
 		}
 
-		public VirtualFileSystem AndPhysicalPath(string path)
-		{
+        public VirtualFileSystem AndPhysicalPath(string path)
+        {
+            return CreatePathInternal(path, true);
+        }
+
+		public static VirtualFileSystem WithPath(string path)
+        {
+            VirtualFileSystem vfs = new VirtualFileSystem();
+
+            vfs = vfs.AndPath(path);
+
+            return vfs;
+        }
+
+		public VirtualFileSystem AndPath(string path)
+        {
+            return CreatePathInternal(path, false);
+        }
+
+        private VirtualFileSystem CreatePathInternal(string path, bool createChildrenFromPhysicalPath)
+        {
 			VirtualFileSystem vfs = this;
 
 			path = Path.GetFullPath(path);
@@ -151,10 +170,13 @@ namespace MayoSolutions.Framework.IO
 				}
 			}
 
-			DirectoryInfo di = new DirectoryInfo(path);
-			if (!(parent is VolumeNode)) CreateChildrenFromPhysicalPath(di, parent);
+            if (createChildrenFromPhysicalPath)
+            {
+                DirectoryInfo di = new DirectoryInfo(path);
+                if (!(parent is VolumeNode)) CreateChildrenFromPhysicalPath(di, parent);
+            }
 
-			return vfs;
+            return vfs;
 		}
 
 		private static void CreateChildrenFromPhysicalPath(DirectoryInfo di, ContainerNode parent)
