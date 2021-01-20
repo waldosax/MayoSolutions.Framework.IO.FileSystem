@@ -5,7 +5,7 @@ namespace MayoSolutions.Framework.IO
     public partial class VirtualFileSystem
     {
         [DebuggerDisplay("File: {" + nameof(Name) + ",nq}")]
-        private class FileNode : FileSystemNode
+        protected class FileNode : FileSystemNode
         {
             private byte[] _contents = new byte[0];
             public byte[] Contents

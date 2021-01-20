@@ -8,7 +8,7 @@ namespace MayoSolutions.Framework.IO
     public partial class VirtualFileSystem
     {
         [DebuggerDisplay("Drive: {" + nameof(Name) + ",nq}")]
-        private class VolumeNode : ContainerNode
+        protected class VolumeNode : ContainerNode
         {
             public VolumeInfo VolumeInfo { get; }
 

@@ -5,7 +5,7 @@ namespace MayoSolutions.Framework.IO
 {
     public partial class VirtualFileSystem 
     {
-        private abstract class FileSystemNode
+        protected abstract class FileSystemNode
         {
             private string _name;
             public string Name

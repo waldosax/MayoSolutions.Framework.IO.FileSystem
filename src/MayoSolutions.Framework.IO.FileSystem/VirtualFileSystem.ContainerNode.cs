@@ -6,7 +6,7 @@ namespace MayoSolutions.Framework.IO
 {
     public partial class VirtualFileSystem
     {
-        private abstract class ContainerNode : FileSystemNode
+        protected abstract class ContainerNode : FileSystemNode
         {
             internal readonly StringComparer StringComparer;
 

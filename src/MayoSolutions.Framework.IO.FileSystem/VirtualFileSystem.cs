@@ -13,7 +13,7 @@ namespace MayoSolutions.Framework.IO
 		public IDirectory Directory { get; }
 		public IFile File { get; }
 
-		private readonly List<VolumeNode> _volumes;
+		protected readonly List<VolumeNode> Volumes;
 
 		private static bool IsOperatingSystemCaseSensitive()
 		{
@@ -51,12 +51,17 @@ namespace MayoSolutions.Framework.IO
 
 		public VirtualFileSystem()
 		{
-			_volumes = new List<VolumeNode>();
-			Stub stub = new Stub(_volumes);
+			Volumes = new List<VolumeNode>();
+			Stub stub = new Stub(Volumes);
 			Drive = stub;
 			Directory = stub;
 			File = stub;
 		}
+
+        public virtual void Clear()
+        {
+			Volumes.Clear();
+        }
 
 		public static VirtualFileSystem FromPhysicalPath(string path)
 		{
@@ -67,7 +72,7 @@ namespace MayoSolutions.Framework.IO
 			return vfs;
 		}
 
-		public VirtualFileSystem WithFiles(string[] paths)
+		public virtual VirtualFileSystem WithFiles(string[] paths)
 		{
 			foreach (string path in paths)
 			{
@@ -75,20 +80,20 @@ namespace MayoSolutions.Framework.IO
 			}
 			return this;
 		}
-		public VirtualFileSystem WithFile(string path, DateTime? lastWriteTime = null)
+		public virtual VirtualFileSystem WithFile(string path, DateTime? lastWriteTime = null)
 		{
 			return WithFileInternal(path, null, lastWriteTime);
 		}
 
-		public VirtualFileSystem WithFile(string path, string contents, DateTime? lastWriteTime = null)
+		public virtual VirtualFileSystem WithFile(string path, string contents, DateTime? lastWriteTime = null)
 		{
 			return WithFile(path, contents, Encoding.Default, lastWriteTime);
 		}
-		public VirtualFileSystem WithFile(string path, string contents, Encoding encoding, DateTime? lastWriteTime = null)
+		public virtual VirtualFileSystem WithFile(string path, string contents, Encoding encoding, DateTime? lastWriteTime = null)
 		{
 			return WithFileInternal(path, encoding.GetBytes(contents), lastWriteTime);
 		}
-		public VirtualFileSystem WithFile(string path, byte[] contents, DateTime? lastWriteTime = null)
+		public virtual VirtualFileSystem WithFile(string path, byte[] contents, DateTime? lastWriteTime = null)
 		{
 			return WithFileInternal(path, contents, lastWriteTime);
 		}
@@ -103,7 +108,7 @@ namespace MayoSolutions.Framework.IO
 			string parentDirectory = FileSystemNodeNavigator.GetParentPath(path);
 			vfs = vfs.AndPath(parentDirectory);
 
-			ContainerNode parent = (ContainerNode)FileSystemNodeNavigator.Get(vfs._volumes, parentDirectory);
+			ContainerNode parent = (ContainerNode)FileSystemNodeNavigator.Get(vfs.Volumes, parentDirectory);
 			FileNode fileNode = parent.Files[fileName];
 			if (fileNode == null)
 			{
@@ -119,7 +124,7 @@ namespace MayoSolutions.Framework.IO
 			return vfs;
 		}
 
-        public VirtualFileSystem AndPhysicalPath(string path)
+		public virtual VirtualFileSystem AndPhysicalPath(string path)
         {
             return CreatePathInternal(path, true);
         }
@@ -133,7 +138,7 @@ namespace MayoSolutions.Framework.IO
             return vfs;
         }
 
-		public VirtualFileSystem AndPath(string path)
+		public virtual VirtualFileSystem AndPath(string path)
         {
             return CreatePathInternal(path, false);
         }
@@ -147,7 +152,7 @@ namespace MayoSolutions.Framework.IO
 
 			if (pathNodes.Length == 0) throw new IOException("Path could not be parsed.");
 
-			VolumeNode volume = FileSystemNodeNavigator.GetOrCreateVolume(_volumes, pathNodes[0], true);
+			VolumeNode volume = FileSystemNodeNavigator.GetOrCreateVolume(Volumes, pathNodes[0], true);
 			StringComparer stringComparer = volume.StringComparer;
 
 			ContainerNode parent = volume;
