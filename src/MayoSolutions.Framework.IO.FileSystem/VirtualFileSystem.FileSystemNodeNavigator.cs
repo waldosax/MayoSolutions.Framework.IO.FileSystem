@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using MayoSolutions.Framework.IO.Extensions;
 
 namespace MayoSolutions.Framework.IO
 {
@@ -41,8 +42,10 @@ namespace MayoSolutions.Framework.IO
 			}
 
 			private static FileSystemNode GetOrCreateInternal(List<VolumeNode> volumes, string path, bool shouldCreate, bool isContextOfFile)
-			{
+            {
+                if (!isContextOfFile) { path = path.TrimPath() + Path.DirectorySeparatorChar; }
 				path = Path.GetFullPath(path);
+                if (!isContextOfFile) { path = path.TrimPath(); }
 				string[] pathNodes = ParsePath(path);
 
 				VolumeNode volume = GetOrCreateVolume(volumes, pathNodes[0], shouldCreate);

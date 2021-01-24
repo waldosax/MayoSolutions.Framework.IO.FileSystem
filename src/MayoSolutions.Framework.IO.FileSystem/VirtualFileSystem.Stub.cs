@@ -108,7 +108,7 @@ namespace MayoSolutions.Framework.IO
             string[] IDirectory.GetDirectories(string path)
             {
                 var node = FileSystemNodeNavigator.Get(_volumes, path);
-                return (node as DirectoryNode)?.Directories?
+                return (node as ContainerNode)?.Directories?
                        .Select(x => x.FullName)
                        .OrderBy(x => x, StringComparer.Ordinal)
                        .ToArray() ?? new string[0];
@@ -117,7 +117,7 @@ namespace MayoSolutions.Framework.IO
             string[] IDirectory.GetFiles(string path)
             {
                 var node = FileSystemNodeNavigator.Get(_volumes, path);
-                return (node as DirectoryNode)?.Files?
+                return (node as ContainerNode)?.Files?
                        .Select(x => x.FullName)
                        .OrderBy(x => x, StringComparer.Ordinal)
                        .ToArray() ?? new string[0];
