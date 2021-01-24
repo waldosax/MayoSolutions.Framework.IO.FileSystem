@@ -244,16 +244,19 @@ namespace MayoSolutions.Framework.IO
 
                 var now = DateTime.Now;
                 fileNode.LastWriteTime = now;
-                if (!(parentNode is VolumeNode)) parentNode.LastWriteTime = now;
+                if (!(parentNode is VolumeNode) && parentNode != null) parentNode.LastWriteTime = now;
             }
 
             void IFile.Delete(string path)
             {
                 AssertParentDirectoryExists(path);
                 var node = FileSystemNodeNavigator.Get(_volumes, path);
-                if (node != null && node is FileNode) node.Parent.Files.Remove(node as FileNode);
-                var now = DateTime.Now;
-                if (!(node.Parent is VolumeNode)) node.Parent.LastWriteTime = now;
+                if (node != null && node is FileNode && node.Parent != null)
+                {
+                    var now = DateTime.Now;
+                    if (!(node.Parent is VolumeNode)) node.Parent.LastWriteTime = now;
+                    node.Parent.Files.Remove(node as FileNode);
+                }
             }
 
             Stream IFile.Open(string path, FileMode fileMode)
