@@ -69,11 +69,19 @@ namespace MayoSolutions.Framework.IO
             public string[] GetFiles(string path) => new DirectoryInfo(path).GetFiles().Select(x => x.FullName).ToArray();
             public string[] GetFiles(string path, string searchPattern) => new DirectoryInfo(path).GetFiles(searchPattern).Select(x => x.FullName).ToArray();
             public string[] GetFiles(string path, string searchPattern, SearchOption searchOption) => new DirectoryInfo(path).GetFiles(searchPattern, searchOption).Select(x => x.FullName).ToArray();
-            public void SetLastWriteTime(string path, DateTime lastWriteTime) => new DirectoryInfo(path).CreationTime = lastWriteTime;
-            public void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc) => new DirectoryInfo(path).CreationTimeUtc = lastWriteTimeUtc;
+            public DateTime GetCreationTime(string path) => new DirectoryInfo(path).CreationTime;
+            public DateTime GetCreationTimeUtc(string path) => new DirectoryInfo(path).CreationTimeUtc;
+            public void SetCreationTime(string path, DateTime creationTime) => new DirectoryInfo(path).CreationTime = creationTime;
+            public void SetCreationTimeUtc(string path, DateTime creationTimeUtc) => new DirectoryInfo(path).CreationTime = creationTimeUtc;
+            public DateTime GetLastWriteTime(string path) => new DirectoryInfo(path).LastWriteTime;
+            public DateTime GetLastWriteTimeUtc(string path) => new DirectoryInfo(path).LastWriteTimeUtc;
+            public void SetLastWriteTime(string path, DateTime lastWriteTime) => new DirectoryInfo(path).LastWriteTime = lastWriteTime;
+            public void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc) => new DirectoryInfo(path).LastWriteTime = lastWriteTimeUtc;
             public void Rename(string srcDirectoryName, string destDirectoryName) => Move(srcDirectoryName, destDirectoryName);
             public void Move(string srcDirectoryName, string destDirectoryName) =>
                 new DirectoryInfo(srcDirectoryName).MoveTo(destDirectoryName);
+
+             
         }
 
         private class FileStub : IFile
@@ -131,6 +139,17 @@ namespace MayoSolutions.Framework.IO
             {
                 return System.IO.File.Open(path, fileMode, fileAccess, fileShare);
             }
+
+
+            public DateTime GetCreationTime(string fileName) => new FileInfo(fileName).CreationTime;
+            public DateTime GetCreationTimeUtc(string fileName) => new FileInfo(fileName).CreationTimeUtc;
+            public void SetCreationTime(string fileName, DateTime creationTime) => new FileInfo(fileName).CreationTime = creationTime;
+            public void SetCreationTimeUtc(string fileName, DateTime creationTimeUtc) => new FileInfo(fileName).CreationTime = creationTimeUtc;
+            public DateTime GetLastWriteTime(string fileName) => new FileInfo(fileName).LastWriteTime;
+            public DateTime GetLastWriteTimeUtc(string fileName) => new FileInfo(fileName).LastWriteTimeUtc;
+            public void SetLastWriteTime(string fileName, DateTime lastWriteTime) => new FileInfo(fileName).LastWriteTime = lastWriteTime;
+            public void SetLastWriteTimeUtc(string fileName, DateTime lastWriteTimeUtc) => new FileInfo(fileName).LastWriteTime = lastWriteTimeUtc;
+
         }
 
 

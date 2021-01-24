@@ -56,11 +56,12 @@ namespace MayoSolutions.Framework.IO
                 }
             }
 
-            void IFile.Rename(string srcFileName, string destFileName)
+            DateTime IDirectory.GetLastWriteTimeUtc(string path)
             {
-                ((IFile)this).Move(srcFileName, destFileName);
+                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                if (!(node is DirectoryNode)) throw new IOException();
+                return node.LastWriteTimeUtc;
             }
-
             void IDirectory.Rename(string srcDirectoryName, string destDirectoryName)
             {
                 ((IDirectory)this).Move(srcDirectoryName, destDirectoryName);
@@ -95,44 +96,6 @@ namespace MayoSolutions.Framework.IO
                     srcParent.Directories.Remove(srcDirectory);
                     destParent.Directories.Add(srcDirectory);
                     destDirectory.Name = dest;
-                }
-            }
-
-            void IFile.Move(string srcFileName, string destFileName)
-            {
-                srcFileName = Path.GetFullPath(srcFileName);
-                string srcParentFolder = FileSystemNodeNavigator.GetParentPath(srcFileName);
-                string src = Path.GetFileName(srcFileName);
-
-                destFileName = Path.GetFullPath(Path.Combine(srcParentFolder, destFileName));
-                string destParentFolder = FileSystemNodeNavigator.GetParentPath(destFileName);
-                string dest = Path.GetFileName(destFileName);
-
-                ContainerNode destParent = (ContainerNode)FileSystemNodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
-                ContainerNode srcParent = (ContainerNode)FileSystemNodeNavigator.Get(_volumes, srcParentFolder);
-
-                if (ReferenceEquals(srcParent, destParent))
-                {
-                    if (destParent.StringComparer.Equals(src, dest))
-                        throw new IOException("Source and destination path must be different.");
-
-                    if (destParent.Files.Contains(src))
-                        destParent.Files[src].Name = dest;
-                    else
-                        destParent.Files.Add(new FileNode { Name = dest });
-                }
-                else
-                {
-                    FileNode srcFile = srcParent.Files[src];
-                    FileNode destFile = destParent.Files[dest];
-
-                    // TODO: if (srcFile == null) throw new IOException("Cannot create a file when that file already exists.");
-                    if (destFile != null) throw new IOException("Cannot create a file when that file already exists.");
-
-                    destFile = srcFile;
-                    srcParent.Files.Remove(srcFile);
-                    destParent.Files.Add(destFile);
-                    destFile.Name = dest;
                 }
             }
 
@@ -180,16 +143,51 @@ namespace MayoSolutions.Framework.IO
                        .ToArray() ?? new string[0];
             }
 
+            void IDirectory.SetCreationTime(string path, DateTime creationTime)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                if (!(node is DirectoryNode)) throw new IOException();
+                node.CreationTime = creationTime;
+            }
+
+            void IDirectory.SetCreationTimeUtc(string path, DateTime creationTimeUtc)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                if (!(node is DirectoryNode)) throw new IOException();
+                node.CreationTime = creationTimeUtc;
+            }
+
+            DateTime IDirectory.GetCreationTime(string path)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                if (!(node is DirectoryNode)) throw new IOException();
+                return node.CreationTime;
+            }
+
+            DateTime IDirectory.GetCreationTimeUtc(string path)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                if (!(node is DirectoryNode)) throw new IOException();
+                return node.CreationTimeUtc;
+            }
+
             void IDirectory.SetLastWriteTime(string path, DateTime lastWriteTime)
             {
                 var node = FileSystemNodeNavigator.Get(_volumes, path);
-                if (node != null && node is DirectoryNode) node.LastWriteTime = lastWriteTime;
+                if (node is DirectoryNode) node.LastWriteTime = lastWriteTime;
             }
 
             void IDirectory.SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
             {
                 var node = FileSystemNodeNavigator.Get(_volumes, path);
-                if (node != null && node is DirectoryNode) node.LastWriteTimeUtc = lastWriteTimeUtc;
+                if (node is DirectoryNode) node.LastWriteTimeUtc = lastWriteTimeUtc;
+            }
+
+            DateTime IDirectory.GetLastWriteTime(string path)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                if (!(node is DirectoryNode)) throw new IOException();
+                return node.LastWriteTime;
             }
 
             #endregion
@@ -243,7 +241,10 @@ namespace MayoSolutions.Framework.IO
                 else fileNode = node as FileNode;
 
                 fileNode.Contents = encoding.GetBytes(contents);
-                fileNode.LastWriteTime = DateTime.Now;
+
+                var now = DateTime.Now;
+                fileNode.LastWriteTime = now;
+                if (!(parentNode is VolumeNode)) parentNode.LastWriteTime = now;
             }
 
             void IFile.Delete(string path)
@@ -251,6 +252,8 @@ namespace MayoSolutions.Framework.IO
                 AssertParentDirectoryExists(path);
                 var node = FileSystemNodeNavigator.Get(_volumes, path);
                 if (node != null && node is FileNode) node.Parent.Files.Remove(node as FileNode);
+                var now = DateTime.Now;
+                if (!(node.Parent is VolumeNode)) node.Parent.LastWriteTime = now;
             }
 
             Stream IFile.Open(string path, FileMode fileMode)
@@ -290,7 +293,110 @@ namespace MayoSolutions.Framework.IO
                 return ((IFile)this).Open(path, fileMode);
             }
 
+            void IFile.Rename(string srcFileName, string destFileName)
+            {
+                ((IFile)this).Move(srcFileName, destFileName);
+            }
+
+
+            void IFile.Move(string srcFileName, string destFileName)
+            {
+                srcFileName = Path.GetFullPath(srcFileName);
+                string srcParentFolder = FileSystemNodeNavigator.GetParentPath(srcFileName);
+                string src = Path.GetFileName(srcFileName);
+
+                destFileName = Path.GetFullPath(Path.Combine(srcParentFolder, destFileName));
+                string destParentFolder = FileSystemNodeNavigator.GetParentPath(destFileName);
+                string dest = Path.GetFileName(destFileName);
+
+                ContainerNode destParent = (ContainerNode)FileSystemNodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
+                ContainerNode srcParent = (ContainerNode)FileSystemNodeNavigator.Get(_volumes, srcParentFolder);
+
+                if (ReferenceEquals(srcParent, destParent))
+                {
+                    if (destParent.StringComparer.Equals(src, dest))
+                        throw new IOException("Source and destination path must be different.");
+
+                    if (destParent.Files.Contains(src))
+                        destParent.Files[src].Name = dest;
+                    else
+                        destParent.Files.Add(new FileNode { Name = dest });
+                }
+                else
+                {
+                    FileNode srcFile = srcParent.Files[src];
+                    FileNode destFile = destParent.Files[dest];
+
+                    // TODO: if (srcFile == null) throw new IOException("Cannot create a file when that file already exists.");
+                    if (destFile != null) throw new IOException("Cannot create a file when that file already exists.");
+
+                    destFile = srcFile;
+                    srcParent.Files.Remove(srcFile);
+                    destParent.Files.Add(destFile);
+                    destFile.Name = dest;
+                }
+            }
+
+            DateTime IFile.GetLastWriteTime(string fileName)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                return node.LastWriteTime;
+            }
+
+            DateTime IFile.GetLastWriteTimeUtc(string fileName)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                return node.LastWriteTimeUtc;
+            }
+
+            void IFile.SetCreationTimeUtc(string fileName, DateTime creationTimeUtc)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                node.CreationTime = creationTimeUtc;
+            }
+
+            DateTime IFile.GetCreationTime(string fileName)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                return node.CreationTime;
+            }
+
+            DateTime IFile.GetCreationTimeUtc(string fileName)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                return node.CreationTimeUtc;
+            }
+
+            void IFile.SetLastWriteTime(string fileName, DateTime lastWriteTime)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                node.LastWriteTime = lastWriteTime;
+            }
+
+            void IFile.SetLastWriteTimeUtc(string fileName, DateTime lastWriteTimeUtc)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                node.LastWriteTimeUtc = lastWriteTimeUtc;
+            }
+
+            void IFile.SetCreationTime(string fileName, DateTime creationTime)
+            {
+                var node = FileSystemNodeNavigator.Get(_volumes, fileName);
+                if (!(node is FileNode)) throw new IOException();
+                node.CreationTime = creationTime;
+            }
+
             #endregion
+
+
+
 
             private ContainerNode AssertParentDirectoryExists(string path)
             {

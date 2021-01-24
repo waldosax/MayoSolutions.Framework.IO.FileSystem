@@ -3,7 +3,7 @@ using System.IO;
 
 namespace MayoSolutions.Framework.IO
 {
-    public partial class VirtualFileSystem 
+    public partial class VirtualFileSystem
     {
         protected abstract class FileSystemNode
         {
@@ -47,6 +47,13 @@ namespace MayoSolutions.Framework.IO
             }
 
             public DateTime LastWriteTimeUtc { get; set; }
+            public DateTime CreationTime
+            {
+                get => CreationTimeUtc.ToLocalTime();
+                set => CreationTimeUtc = value.ToUniversalTime();
+            }
+
+            public DateTime CreationTimeUtc { get; set; }
 
             private ContainerNode _parent;
             public ContainerNode Parent
@@ -58,6 +65,22 @@ namespace MayoSolutions.Framework.IO
                     Invalidate();
                 }
             }
+
+
+
+            protected FileSystemNode()
+                : this(DateTime.UtcNow)
+            { }
+
+            protected FileSystemNode(DateTime creationTimeUtc)
+            {
+                CreationTimeUtc = creationTimeUtc.ToUniversalTime();
+            }
+
+
+
+
+
 
             internal virtual void Invalidate()
             {

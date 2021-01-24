@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace MayoSolutions.Framework.IO
@@ -16,5 +17,15 @@ namespace MayoSolutions.Framework.IO
         Stream Open(string path, FileMode fileMode);
         Stream Open(string path, FileMode fileMode, FileAccess fileAccess);
         Stream Open(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare);
+  
+        void SetCreationTime(string fileName, DateTime creationTime);
+        void SetCreationTimeUtc(string fileName, DateTime creationTimeUtc);
+        DateTime GetCreationTime(string fileName);
+        DateTime GetCreationTimeUtc(string fileName);
+
+        void SetLastWriteTime(string fileName, DateTime lastWriteTime);
+        void SetLastWriteTimeUtc(string fileName, DateTime lastWriteTimeUtc);
+        DateTime GetLastWriteTime(string fileName);
+        DateTime GetLastWriteTimeUtc(string fileName);
     }
 }
