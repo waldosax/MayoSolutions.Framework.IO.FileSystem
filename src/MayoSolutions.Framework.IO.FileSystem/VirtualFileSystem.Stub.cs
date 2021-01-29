@@ -73,12 +73,12 @@ namespace MayoSolutions.Framework.IO
 
             void IDirectory.Move(string srcDirectoryName, string destDirectoryName)
             {
-                srcDirectoryName = Path.GetFullPath(srcDirectoryName);
+                srcDirectoryName = _nodeNavigator.GetFullPath(srcDirectoryName);
                 string srcParentFolder = _nodeNavigator.GetParentPath(srcDirectoryName);
                 string src = Path.GetFileName(srcDirectoryName);
 
                 string destParentFolder = _nodeNavigator.GetParentPath(destDirectoryName);
-                destDirectoryName = Path.GetFullPath(Path.Combine(srcParentFolder, destDirectoryName));
+                destDirectoryName = _nodeNavigator.GetFullPath(Path.Combine(srcParentFolder, destDirectoryName));
                 string dest = Path.GetFileName(destDirectoryName);
 
                 ContainerNode destParent = (ContainerNode)_nodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
@@ -307,11 +307,11 @@ namespace MayoSolutions.Framework.IO
 
             void IFile.Move(string srcFileName, string destFileName)
             {
-                srcFileName = Path.GetFullPath(srcFileName);
+                srcFileName = _nodeNavigator.GetFullPath(srcFileName);
                 string srcParentFolder = _nodeNavigator.GetParentPath(srcFileName);
                 string src = Path.GetFileName(srcFileName);
 
-                destFileName = Path.GetFullPath(Path.Combine(srcParentFolder, destFileName));
+                destFileName = _nodeNavigator.GetFullPath(Path.Combine(srcParentFolder, destFileName));
                 string destParentFolder = _nodeNavigator.GetParentPath(destFileName);
                 string dest = Path.GetFileName(destFileName);
 

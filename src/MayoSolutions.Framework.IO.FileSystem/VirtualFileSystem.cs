@@ -131,7 +131,7 @@ namespace MayoSolutions.Framework.IO
         {
             VirtualFileSystem vfs = this;
 
-            path = Path.GetFullPath(path);
+            if (DirectorySeparatorChar == '\\') path = Path.GetFullPath(path);
 
             string fileName = Path.GetFileName(path);
             string parentDirectory = NodeNavigator.GetParentPath(path);
@@ -176,7 +176,7 @@ namespace MayoSolutions.Framework.IO
         {
             VirtualFileSystem vfs = this;
 
-            path = Path.GetFullPath(path);
+            if (DirectorySeparatorChar == '\\') path = Path.GetFullPath(path);
             path = FileSystemUtility.SanitizePath(path, DirectorySeparatorChar);
             string[] pathNodes = FileSystemUtility.ParsePath(path, DirectorySeparatorChar);
 
@@ -194,7 +194,7 @@ namespace MayoSolutions.Framework.IO
                 {
                     DirectoryNode current = new DirectoryNode(NodeNavigator, pathNodes[i], stringComparer)
                     {
-                        LastWriteTime = new DirectoryInfo(fullName).LastWriteTime,
+                        LastWriteTime = createChildrenFromPhysicalPath ? new DirectoryInfo(fullName).LastWriteTime: DateTime.Now,
                     };
                     parent.Directories.Add(current);
                     parent = current;

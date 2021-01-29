@@ -50,10 +50,12 @@ namespace MayoSolutions.Framework.IO
 
             private FileSystemNode GetOrCreateInternal(List<VolumeNode> volumes, string path, bool shouldCreate, bool isContextOfFile)
             {
-                if (!isContextOfFile) { path = path.TrimPath() + _directorySeparatorChar; }
-                path = Path.GetFullPath(path);
+                if (_directorySeparatorChar == '\\') { 
+                    if (!isContextOfFile) { path = path.TrimPath() + _directorySeparatorChar; }
+                    path = Path.GetFullPath(path);
+                }
                 if (!isContextOfFile) { path = path.TrimPath(); }
-                string[] pathNodes = FileSystemUtility.ParsePath(path);
+                string[] pathNodes = FileSystemUtility.ParsePath(path, _directorySeparatorChar);
 
                 VolumeNode volume = GetOrCreateVolume(volumes, pathNodes[0], shouldCreate);
                 if (volume == null) return null;
@@ -151,8 +153,13 @@ namespace MayoSolutions.Framework.IO
                 }
 
                 var firstNode = nodes[0];
-                if (firstNode is RootNode) return "/" + string.Join(_directorySeparatorChar.ToString(), (string[])nodes.Skip(1).Take(nodes.Count - 1).Select(nd => nd.Name).ToArray());
-                return string.Join(_directorySeparatorChar.ToString(), (string[])nodes.Take(nodes.Count - 1).Select(nd => nd.Name).ToArray());
+                if (firstNode is RootNode) return "/" + string.Join(_directorySeparatorChar.ToString(), (string[])nodes.Skip(1).Take(nodes.Count-1).Select(nd => nd.Name).ToArray());
+                return string.Join(_directorySeparatorChar.ToString(), (string[])nodes.Take(nodes.Count).Select(nd => nd.Name).ToArray());
+            }
+            public string GetFullPath(string path)
+            {
+                if (_directorySeparatorChar == '\\') return Path.GetFullPath(path);
+                return path;
             }
 
             public string GetParentPath(string path)
