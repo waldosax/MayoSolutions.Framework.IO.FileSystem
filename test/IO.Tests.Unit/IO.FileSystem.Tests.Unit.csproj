@@ -5,7 +5,7 @@
 
 		<IsPackable>false</IsPackable>
 
-		<AssemblyName>Tests.Unitench</AssemblyName>
+		<AssemblyName>Tests.Unit</AssemblyName>
 
 		<RootNamespace>MayoSolutions.Framework.IO.Tests.Unit</RootNamespace>
 	</PropertyGroup>

@@ -17,6 +17,7 @@ namespace MayoSolutions.Framework.IO
         protected readonly List<VolumeNode> Volumes;
         protected readonly FileSystemNodeNavigator NodeNavigator;
         public readonly char DirectorySeparatorChar;
+        public readonly OSPlatform Platform;
 
         #region Meta
 
@@ -69,6 +70,7 @@ namespace MayoSolutions.Framework.IO
 
         public VirtualFileSystem(OSPlatform platform)
         {
+            Platform = platform;
             DirectorySeparatorChar = '\\';
             NodeNavigator = new FileSystemNodeNavigator(DirectorySeparatorChar);
             Volumes = new List<VolumeNode>();
@@ -88,6 +90,7 @@ namespace MayoSolutions.Framework.IO
         {
             Volumes.Clear();
         }
+        
 
         public static VirtualFileSystem FromPhysicalPath(string path)
         {
@@ -174,6 +177,7 @@ namespace MayoSolutions.Framework.IO
             VirtualFileSystem vfs = this;
 
             path = Path.GetFullPath(path);
+            path = FileSystemUtility.SanitizePath(path, DirectorySeparatorChar);
             string[] pathNodes = FileSystemUtility.ParsePath(path, DirectorySeparatorChar);
 
             if (pathNodes.Length == 0) throw new IOException("Path could not be parsed.");

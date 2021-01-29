@@ -93,6 +93,44 @@ namespace MayoSolutions.Framework.IO.Tests.Unit
             }
         }
 
+        public abstract class SanitizePathTests
+        {
+            public class WhenWindows : SanitizePathTests
+            {
+                [Test]
+                [TestCase('\\', @"C:\Windows\system32", @"C:\Windows\system32")]
+                [TestCase('\\', @"C:\Windows/system32", @"C:\Windows\system32")]
+                [TestCase('\\', @"\\tsclient\C$\Windows", @"\\tsclient\C$\Windows")]
+                [TestCase('\\', @"\\tsclient\C$/Windows", @"\\tsclient\C$\Windows")]
+                public void ShouldSanitizeLinuxPaths(
+                    char directorySeparator,
+                    string sut,
+                    string expected
+                    )
+                {
+                    string actual = FileSystemUtility.SanitizePath(sut, directorySeparator);
+                    Assert.That(actual, Is.EqualTo(expected));
+                }
+            }
 
+            public class WhenLinux : SanitizePathTests
+            {
+                [Test]
+                [TestCase('/', @"/mnt/Staging/TV/Archer", @"/mnt/Staging/TV/Archer")]
+                [TestCase('/', @"/mnt/Staging/TV\Archer", @"/mnt/Staging/TV/Archer")]
+                [TestCase('/', @"C:\Windows/system32", @"/C/Windows/system32")]
+                [TestCase('/', @"//tsclient/C$/Windows", @"//tsclient/C$/Windows")]
+                [TestCase('/', @"//tsclient\C$/Windows", @"//tsclient/C$/Windows")]
+                public void ShouldSanitizeLinuxPaths(
+                    char directorySeparator,
+                    string sut,
+                    string expected
+                    )
+                {
+                    string actual = FileSystemUtility.SanitizePath(sut, directorySeparator);
+                    Assert.That(actual, Is.EqualTo(expected));
+                }
+            }
+        }
     }
 }

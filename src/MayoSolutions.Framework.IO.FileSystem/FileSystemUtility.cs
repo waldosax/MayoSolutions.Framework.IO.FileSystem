@@ -132,5 +132,32 @@ namespace MayoSolutions.Framework.IO
 
             return y.Substring(x.Length).TrimStart(Path.DirectorySeparatorChar);
         }
+
+
+
+
+
+
+
+        public static string SanitizePath(string path)
+        {
+            return SanitizePath(path, Path.DirectorySeparatorChar);
+        }
+
+        internal static string SanitizePath(string path, char directorySeparatorChar)
+        {
+            if (directorySeparatorChar == '/')
+            {
+                if (path.IndexOf(Path.VolumeSeparatorChar) >= 0) path = path.Replace(Path.VolumeSeparatorChar.ToString(), "");
+                path = path.Replace('\\', '/');
+                if (path.IndexOf('/') != 0) path = "/" + path;
+            }
+            else if (directorySeparatorChar == '\\')
+            {
+                path = path.Replace('/', '\\');
+            }
+            return path;
+        }
+
     }
 }
