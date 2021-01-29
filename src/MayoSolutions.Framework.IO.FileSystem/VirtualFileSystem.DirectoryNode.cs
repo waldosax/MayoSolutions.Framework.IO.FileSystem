@@ -8,7 +8,13 @@ namespace MayoSolutions.Framework.IO
         [DebuggerDisplay("Directory: {" + nameof(Name) + ",nq}")]
         protected class DirectoryNode : ContainerNode
         {
-            public DirectoryNode(string name, StringComparer stringComparer) : base(name, stringComparer)
+            public DirectoryNode(
+                FileSystemNodeNavigator nodeNavigator, 
+                string name, 
+                StringComparer stringComparer,
+                DateTime? creationTimUtc = null
+                )
+                : base(nodeNavigator, name, stringComparer, creationTimUtc)
             {
             }
         }

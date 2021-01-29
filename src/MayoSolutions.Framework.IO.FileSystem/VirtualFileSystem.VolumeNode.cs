@@ -13,9 +13,11 @@ namespace MayoSolutions.Framework.IO
             public VolumeInfo VolumeInfo { get; }
 
             public VolumeNode(
+                FileSystemNodeNavigator nodeNavigator,
                 VolumeInfo volumeInfo
                 )
                 : base(
+                    nodeNavigator,
                     volumeInfo.RootPathName.TrimPath(),
                     volumeInfo.IsCaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase)
             {
@@ -23,9 +25,10 @@ namespace MayoSolutions.Framework.IO
             }
 
             public VolumeNode(
+                FileSystemNodeNavigator nodeNavigator,
                 string name, 
                 StringComparer stringComparer)
-                : base(name, stringComparer)
+                : base(nodeNavigator, name, stringComparer)
             {
                 VolumeInfo = new VolumeInfo
                 {

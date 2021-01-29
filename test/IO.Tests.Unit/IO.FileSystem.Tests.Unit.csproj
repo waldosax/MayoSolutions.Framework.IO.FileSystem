@@ -17,7 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\src\MayoSolutions.Framework.IO.FileSystem\MayoSolutions.Framework.IO.FileSystem.csproj" />
+	  <ProjectReference Include="..\..\src\MayoSolutions.Framework.IO.FileSystem\MayoSolutions.Framework.IO.FileSystem.csproj" />
 	</ItemGroup>
 
 </Project>

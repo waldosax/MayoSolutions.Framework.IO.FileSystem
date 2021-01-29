@@ -8,8 +8,8 @@ namespace MayoSolutions.Framework.IO
         [DebuggerDisplay("Root: {" + nameof(Name) + ",nq}")]
         protected class RootNode : VolumeNode
         {
-            public RootNode()
-                : base(new VolumeInfo
+            public RootNode(FileSystemNodeNavigator nodeNavigator)
+                : base(nodeNavigator, new VolumeInfo
                 {
                     IsCaseSensitive = true,
                     DriveType = DriveType.NoRootDirectory,

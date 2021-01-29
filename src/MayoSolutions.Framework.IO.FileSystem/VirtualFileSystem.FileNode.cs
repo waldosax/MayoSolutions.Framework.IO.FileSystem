@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace MayoSolutions.Framework.IO
 {
@@ -13,6 +14,12 @@ namespace MayoSolutions.Framework.IO
                 get => _contents;
                 set => _contents = value ?? new byte[0];
             }
+
+            public FileNode(
+                FileSystemNodeNavigator nodeNavigator,
+                DateTime? creationTimeUtc = null)
+                : base(nodeNavigator, creationTimeUtc)
+            { }
         }
     }
 }

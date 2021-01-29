@@ -70,14 +70,14 @@ namespace MayoSolutions.Framework.IO
         public VirtualFileSystem(OSPlatform platform)
         {
             DirectorySeparatorChar = '\\';
+            NodeNavigator = new FileSystemNodeNavigator(DirectorySeparatorChar);
             Volumes = new List<VolumeNode>();
             if (platform != OSPlatform.Windows)
             {
-                Volumes.Add(new RootNode());
+                Volumes.Add(new RootNode(NodeNavigator));
                 DirectorySeparatorChar = '/';
             }
 
-            NodeNavigator = new FileSystemNodeNavigator(DirectorySeparatorChar);
             Stub stub = new Stub(Volumes, DirectorySeparatorChar, NodeNavigator);
             Drive = stub;
             Directory = stub;
@@ -138,7 +138,7 @@ namespace MayoSolutions.Framework.IO
             FileNode fileNode = parent.Files[fileName];
             if (fileNode == null)
             {
-                fileNode = new FileNode
+                fileNode = new FileNode(parent.NodeNavigator)
                 {
                     Name = fileName,
                     Contents = contents ?? new byte[0],
@@ -188,7 +188,7 @@ namespace MayoSolutions.Framework.IO
                 DirectoryNode existing = parent.Directories[pathNodes[i]];
                 if (existing == null)
                 {
-                    DirectoryNode current = new DirectoryNode(pathNodes[i], stringComparer)
+                    DirectoryNode current = new DirectoryNode(NodeNavigator, pathNodes[i], stringComparer)
                     {
                         LastWriteTime = new DirectoryInfo(fullName).LastWriteTime,
                     };
@@ -228,7 +228,7 @@ namespace MayoSolutions.Framework.IO
 
             foreach (FileInfo fi in files)
             {
-                FileNode fileNode = new FileNode
+                FileNode fileNode = new FileNode(parent.NodeNavigator)
                 {
                     Name = fi.Name,
                     LastWriteTime = fi.LastWriteTime,
@@ -249,7 +249,7 @@ namespace MayoSolutions.Framework.IO
 
             foreach (DirectoryInfo child in directories)
             {
-                DirectoryNode directoryNode = new DirectoryNode(child.Name, parent.StringComparer)
+                DirectoryNode directoryNode = new DirectoryNode(parent.NodeNavigator, child.Name, parent.StringComparer)
                 {
                     LastWriteTime = child.LastWriteTime,
                 };

@@ -1,12 +1,12 @@
 ﻿using System;
-using System.IO;
 
 namespace MayoSolutions.Framework.IO
 {
-    public partial class VirtualFileSystem 
+    public partial class VirtualFileSystem
     {
         protected abstract class FileSystemNode
         {
+            internal readonly FileSystemNodeNavigator NodeNavigator;
             private string _name;
             public string Name
             {
@@ -19,26 +19,7 @@ namespace MayoSolutions.Framework.IO
             }
 
             private string _fullName;
-            public string FullName
-            {
-                get
-                {
-                    if (_fullName == null)
-                    {
-                        string fullName = Name;
-                        ContainerNode parent = Parent;
-                        while (parent != null)
-                        {
-                            fullName = parent.Name + Path.DirectorySeparatorChar + fullName;
-                            parent = parent.Parent;
-                        }
-
-                        _fullName = fullName;
-                    }
-
-                    return _fullName;
-                }
-            }
+            public string FullName => _fullName ?? (_fullName = NodeNavigator.GetFullPath(this));
 
             public DateTime LastWriteTime
             {
@@ -47,6 +28,13 @@ namespace MayoSolutions.Framework.IO
             }
 
             public DateTime LastWriteTimeUtc { get; set; }
+            public DateTime CreationTime
+            {
+                get => CreationTimeUtc.ToLocalTime();
+                set => CreationTimeUtc = value.ToUniversalTime();
+            }
+
+            public DateTime CreationTimeUtc { get; set; }
 
             private ContainerNode _parent;
             public ContainerNode Parent
@@ -58,6 +46,20 @@ namespace MayoSolutions.Framework.IO
                     Invalidate();
                 }
             }
+
+
+
+            
+
+            protected FileSystemNode(FileSystemNodeNavigator nodeNavigator, DateTime? creationTimeUtc = null)
+            {
+                NodeNavigator = nodeNavigator;
+                CreationTimeUtc = (creationTimeUtc ?? DateTime.UtcNow).ToUniversalTime();
+            }
+            
+
+
+
 
             internal virtual void Invalidate()
             {

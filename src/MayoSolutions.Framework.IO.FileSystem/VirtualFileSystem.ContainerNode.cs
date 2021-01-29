@@ -13,7 +13,8 @@ namespace MayoSolutions.Framework.IO
             public ChildList<DirectoryNode> Directories { get; }
             public ChildList<FileNode> Files { get; }
 
-            protected ContainerNode(string name, StringComparer stringComparer)
+            protected ContainerNode(FileSystemNodeNavigator nodeNavigator, string name, StringComparer stringComparer, DateTime? creationTimeUtc = null)
+            :base(nodeNavigator, creationTimeUtc)
             {
                 StringComparer = stringComparer;
                 Directories = new ChildList<DirectoryNode>(this);
