@@ -71,13 +71,13 @@ namespace MayoSolutions.Framework.IO
         public VirtualFileSystem(OSPlatform platform)
         {
             Platform = platform;
-            DirectorySeparatorChar = '\\';
+            DirectorySeparatorChar = platform != OSPlatform.Windows ?'/':'\\';
             NodeNavigator = new FileSystemNodeNavigator(DirectorySeparatorChar);
+            
             Volumes = new List<VolumeNode>();
             if (platform != OSPlatform.Windows)
             {
                 Volumes.Add(new RootNode(NodeNavigator));
-                DirectorySeparatorChar = '/';
             }
 
             Stub stub = new Stub(Volumes, DirectorySeparatorChar, NodeNavigator);
