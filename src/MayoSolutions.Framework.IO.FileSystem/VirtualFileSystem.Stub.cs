@@ -12,10 +12,14 @@ namespace MayoSolutions.Framework.IO
         private class Stub : IDrive, IDirectory, IFile
         {
             private readonly List<VolumeNode> _volumes;
+            private readonly char _directorySeparatorChar;
+            private readonly FileSystemNodeNavigator _nodeNavigator;
 
-            public Stub(List<VolumeNode> volumes)
+            public Stub(List<VolumeNode> volumes, char directorySeparatorChar, FileSystemNodeNavigator nodeNavigator)
             {
                 _volumes = volumes;
+                _directorySeparatorChar = directorySeparatorChar;
+                _nodeNavigator = nodeNavigator;
             }
 
             #region IDrive
@@ -36,18 +40,18 @@ namespace MayoSolutions.Framework.IO
 
             void IDirectory.CreateDirectory(string path)
             {
-                FileSystemNodeNavigator.GetOrCreate(_volumes, path, false);
+                _nodeNavigator.GetOrCreate(_volumes, path, false);
             }
 
             bool IDirectory.Exists(string path)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 return node != null && node is DirectoryNode;
             }
 
             void IDirectory.Delete(string path)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node != null && node is DirectoryNode)
                 {
                     var directoryNode = node as DirectoryNode;
@@ -69,15 +73,15 @@ namespace MayoSolutions.Framework.IO
             void IDirectory.Move(string srcDirectoryName, string destDirectoryName)
             {
                 srcDirectoryName = Path.GetFullPath(srcDirectoryName);
-                string srcParentFolder = FileSystemNodeNavigator.GetParentPath(srcDirectoryName);
+                string srcParentFolder = _nodeNavigator.GetParentPath(srcDirectoryName);
                 string src = Path.GetFileName(srcDirectoryName);
 
-                string destParentFolder = FileSystemNodeNavigator.GetParentPath(destDirectoryName);
+                string destParentFolder = _nodeNavigator.GetParentPath(destDirectoryName);
                 destDirectoryName = Path.GetFullPath(Path.Combine(srcParentFolder, destDirectoryName));
                 string dest = Path.GetFileName(destDirectoryName);
 
-                ContainerNode destParent = (ContainerNode)FileSystemNodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
-                ContainerNode srcParent = (ContainerNode)FileSystemNodeNavigator.Get(_volumes, srcParentFolder);
+                ContainerNode destParent = (ContainerNode)_nodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
+                ContainerNode srcParent = (ContainerNode)_nodeNavigator.Get(_volumes, srcParentFolder);
 
                 if (ReferenceEquals(srcParent, destParent))
                 {
@@ -101,15 +105,15 @@ namespace MayoSolutions.Framework.IO
             void IFile.Move(string srcFileName, string destFileName)
             {
                 srcFileName = Path.GetFullPath(srcFileName);
-                string srcParentFolder = FileSystemNodeNavigator.GetParentPath(srcFileName);
+                string srcParentFolder = _nodeNavigator.GetParentPath(srcFileName);
                 string src = Path.GetFileName(srcFileName);
 
                 destFileName = Path.GetFullPath(Path.Combine(srcParentFolder, destFileName));
-                string destParentFolder = FileSystemNodeNavigator.GetParentPath(destFileName);
+                string destParentFolder = _nodeNavigator.GetParentPath(destFileName);
                 string dest = Path.GetFileName(destFileName);
 
-                ContainerNode destParent = (ContainerNode)FileSystemNodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
-                ContainerNode srcParent = (ContainerNode)FileSystemNodeNavigator.Get(_volumes, srcParentFolder);
+                ContainerNode destParent = (ContainerNode)_nodeNavigator.GetOrCreate(_volumes, destParentFolder, false);
+                ContainerNode srcParent = (ContainerNode)_nodeNavigator.Get(_volumes, srcParentFolder);
 
                 if (ReferenceEquals(srcParent, destParent))
                 {
@@ -138,13 +142,13 @@ namespace MayoSolutions.Framework.IO
 
             void IDirectory.Delete(string path, bool recursive)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node != null && node is DirectoryNode) node.Parent.Directories.Remove(node as DirectoryNode);
             }
 
             string[] IDirectory.GetDirectories(string path)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 return (node as DirectoryNode)?.Directories?
                        .Select(x => x.FullName)
                        .OrderBy(x => x, StringComparer.Ordinal)
@@ -153,7 +157,7 @@ namespace MayoSolutions.Framework.IO
 
             string[] IDirectory.GetFiles(string path)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 return (node as DirectoryNode)?.Files?
                        .Select(x => x.FullName)
                        .OrderBy(x => x, StringComparer.Ordinal)
@@ -162,7 +166,7 @@ namespace MayoSolutions.Framework.IO
 
             string[] IDirectory.GetFiles(string path, string searchPattern)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 return (node as DirectoryNode)?.Files?
                        .Select(x => x.FullName)
                        // TODO: Implement searchPattern
@@ -172,7 +176,7 @@ namespace MayoSolutions.Framework.IO
 
             string[] IDirectory.GetFiles(string path, string searchPattern, SearchOption searchOption)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 return (node as DirectoryNode)?.Files?
                        .Select(x => x.Name)
                        // TODO: Implement searchPattern
@@ -182,13 +186,13 @@ namespace MayoSolutions.Framework.IO
 
             void IDirectory.SetLastWriteTime(string path, DateTime lastWriteTime)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node != null && node is DirectoryNode) node.LastWriteTime = lastWriteTime;
             }
 
             void IDirectory.SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node != null && node is DirectoryNode) node.LastWriteTimeUtc = lastWriteTimeUtc;
             }
 
@@ -203,18 +207,18 @@ namespace MayoSolutions.Framework.IO
 
             string IFile.ReadAllText(string path, Encoding encoding)
             {
-                string[] pathNodes = FileSystemNodeNavigator.ParsePath(path);
-                string parentPath = FileSystemNodeNavigator.GetParentPath(pathNodes);
-                var parentNode = FileSystemNodeNavigator.Get(_volumes, parentPath);
+                string[] pathNodes = FileSystemUtility.ParsePath(path, _directorySeparatorChar);
+                string parentPath = _nodeNavigator.GetParentPath(pathNodes);
+                var parentNode = _nodeNavigator.Get(_volumes, parentPath);
                 if (parentNode == null || (!(parentNode is DirectoryNode))) throw new DirectoryNotFoundException($"Could not find a part of the path '{path}'.");
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node == null || (!(node is FileNode))) throw new FileNotFoundException($"Could not find file '{path}'.");
                 return encoding.GetString(((FileNode)node).Contents);
             }
 
             bool IFile.Exists(string path)
             {
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 return (node != null && node is FileNode);
             }
 
@@ -225,9 +229,9 @@ namespace MayoSolutions.Framework.IO
 
             void IFile.WriteAllText(string path, string contents, Encoding encoding)
             {
-                var pathNodes = FileSystemNodeNavigator.ParsePath(path);
+                var pathNodes = FileSystemUtility.ParsePath(path, _directorySeparatorChar);
                 var parentNode = AssertParentDirectoryExists(path);
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 FileNode fileNode = null;
                 if (node == null)
                 {
@@ -249,7 +253,7 @@ namespace MayoSolutions.Framework.IO
             void IFile.Delete(string path)
             {
                 AssertParentDirectoryExists(path);
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node != null && node is FileNode) node.Parent.Files.Remove(node as FileNode);
             }
 
@@ -257,7 +261,7 @@ namespace MayoSolutions.Framework.IO
             {
                 // TODO: Match exceptions to actual fileSystem
 
-                var node = FileSystemNodeNavigator.Get(_volumes, path);
+                var node = _nodeNavigator.Get(_volumes, path);
                 if (node != null && !(node is FileNode))
                 {
                     throw new DirectoryNotFoundException($"Could not find a part of the path '{path}'.");
@@ -275,7 +279,7 @@ namespace MayoSolutions.Framework.IO
 
                 if (node == null)
                 {
-                    node = FileSystemNodeNavigator.GetOrCreate(_volumes, path, true);
+                    node = _nodeNavigator.GetOrCreate(_volumes, path, true);
                 }
                 return new FileNodeStream((FileNode)node, fileMode);
             }
@@ -294,9 +298,9 @@ namespace MayoSolutions.Framework.IO
 
             private ContainerNode AssertParentDirectoryExists(string path)
             {
-                string[] pathNodes = FileSystemNodeNavigator.ParsePath(path);
-                string parentPath = FileSystemNodeNavigator.GetParentPath(pathNodes);
-                var parentNode = FileSystemNodeNavigator.Get(_volumes, parentPath);
+                string[] pathNodes = FileSystemUtility.ParsePath(path, _directorySeparatorChar);
+                string parentPath = _nodeNavigator.GetParentPath(pathNodes);
+                var parentNode = _nodeNavigator.Get(_volumes, parentPath);
                 if (parentNode == null || (!(parentNode is ContainerNode))) throw new DirectoryNotFoundException($"Could not find a part of the path '{path}'.");
                 return parentNode as ContainerNode;
             }

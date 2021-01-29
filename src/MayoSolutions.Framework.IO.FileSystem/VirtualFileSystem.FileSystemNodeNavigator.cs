@@ -8,154 +8,166 @@ namespace MayoSolutions.Framework.IO
 {
     public partial class VirtualFileSystem
     {
-		private static class FileSystemNodeNavigator
-		{
-			public static FileSystemNode Get(List<VolumeNode> volumes, string path)
-			{
-				return GetOrCreateInternal(volumes, path, false, false);
-			}
+        protected class FileSystemNodeNavigator
+        {
+            private readonly char _directorySeparatorChar;
 
-			public static FileSystemNode GetOrCreate(List<VolumeNode> volumes, string path, bool createFile)
-			{
-				return GetOrCreateInternal(volumes, path, true, createFile);
-			}
+            public FileSystemNodeNavigator(char directorySeparatorChar)
+            {
+                _directorySeparatorChar = directorySeparatorChar;
+            }
 
-			public static VolumeNode GetOrCreateVolume(List<VolumeNode> volumes, string rootPathName, bool shouldCreate)
-			{
-				foreach (VolumeNode volume in volumes)
-				{
-					if (volume.StringComparer.Equals(volume.Name, rootPathName)) return volume;
-				}
+            public FileSystemNode Get(List<VolumeNode> volumes, string path)
+            {
+                return GetOrCreateInternal(volumes, path, false, false);
+            }
 
-				if (shouldCreate)
-				{
-					VolumeNode volume = new VolumeNode(rootPathName, GetStringComparer(IsVolumeCaseSensitive(rootPathName)))
-					{
-						LastWriteTime = DateTime.Now
-					};
-					volumes.Add(volume);
-					return volume;
-				}
+            public FileSystemNode GetOrCreate(List<VolumeNode> volumes, string path, bool createFile)
+            {
+                return GetOrCreateInternal(volumes, path, true, createFile);
+            }
 
-				return null;
-			}
+            public VolumeNode GetOrCreateVolume(List<VolumeNode> volumes, string rootPathName, bool shouldCreate)
+            {
+                foreach (VolumeNode volume in volumes)
+                {
+                    if (volume.StringComparer.Equals(volume.Name, rootPathName)) return volume;
+                }
 
-			private static FileSystemNode GetOrCreateInternal(List<VolumeNode> volumes, string path, bool shouldCreate, bool isContextOfFile)
-			{
-				path = Path.GetFullPath(path);
-				string[] pathNodes = ParsePath(path);
+                if (shouldCreate)
+                {
+                    VolumeNode volume;
+                    if (_directorySeparatorChar == '/' || rootPathName == "/")
+                    {
+                        RootNode root = new RootNode();
+                        volume = root;
+                    }
+                    else
+                    {
+                        volume = new VolumeNode(rootPathName, GetStringComparer(IsVolumeCaseSensitive(rootPathName)));
+                    }
 
-				VolumeNode volume = GetOrCreateVolume(volumes, pathNodes[0], shouldCreate);
-				if (volume == null) return null;
-				StringComparer stringComparer = volume.StringComparer;
+                    volume.LastWriteTime = DateTime.Now;
+                    volumes.Add(volume);
+                    return volume;
+                }
 
-				ContainerNode current = volume;
-				if (pathNodes.Length <= 1) return current;
+                return null;
+            }
 
-				int i;
-				for (i = 1; i < pathNodes.Length - 1; i++)
-				{
-					bool found = false;
+            private FileSystemNode GetOrCreateInternal(List<VolumeNode> volumes, string path, bool shouldCreate, bool isContextOfFile)
+            {
+                path = Path.GetFullPath(path);
+                string[] pathNodes = FileSystemUtility.ParsePath(path, _directorySeparatorChar);
 
-					var child = current.Directories[pathNodes[i]];
-					if (child != null)
-					{
-						found = true;
-						current = child;
-					}
+                VolumeNode volume = GetOrCreateVolume(volumes, pathNodes[0], shouldCreate);
+                if (volume == null) return null;
+                StringComparer stringComparer = volume.StringComparer;
 
-					if (!found)
-					{
-						if (!shouldCreate) return null;
-						break;
-					}
-				}
+                ContainerNode current = volume;
+                if (pathNodes.Length <= 1) return current;
 
-				if (i >= pathNodes.Length && Debugger.IsAttached) Debugger.Break();
-				var pathNode = pathNodes[i];
-				var directory = current.Directories[pathNode];
-				if (directory != null) return directory;
+                int i;
+                for (i = 1; i < pathNodes.Length - 1; i++)
+                {
+                    bool found = false;
 
-				var file = current.Files[pathNode];
-				if (file != null) return file;
+                    var child = current.Directories[pathNodes[i]];
+                    if (child != null)
+                    {
+                        found = true;
+                        current = child;
+                    }
 
-				if (!shouldCreate) return null;
+                    if (!found)
+                    {
+                        if (!shouldCreate) return null;
+                        break;
+                    }
+                }
 
-				for (int j = i; j < pathNodes.Length - 1; j++)
-				{
-					DirectoryNode existingDirectory = current.Directories[pathNodes[i]];
-					if (existingDirectory == null)
-					{
-						DirectoryNode newDirectory = new DirectoryNode(pathNodes[i], stringComparer)
-						{
-							LastWriteTime = DateTime.Now,
-						};
-						current.Directories.Add(newDirectory);
-						current = newDirectory;
-					}
-					else
-					{
-						current = existingDirectory;
-					}
-				}
+                if (i >= pathNodes.Length && Debugger.IsAttached) Debugger.Break();
+                var pathNode = pathNodes[i];
+                var directory = current.Directories[pathNode];
+                if (directory != null) return directory;
 
-				if (!isContextOfFile)
-				{
-					DirectoryNode existingDirectory = current.Directories[pathNodes[i]];
-					if (existingDirectory == null)
-					{
-						DirectoryNode newDirectory = new DirectoryNode(pathNodes[i], stringComparer)
-						{
-							LastWriteTime = DateTime.Now,
-						};
-						current.Directories.Add(newDirectory);
-						return newDirectory;
-					}
+                var file = current.Files[pathNode];
+                if (file != null) return file;
 
-					return existingDirectory;
-				}
+                if (!shouldCreate) return null;
 
-				FileNode existingFile = current.Files[pathNodes[i]];
-				if (existingFile == null)
-				{
-					FileNode fileNode = new FileNode
-					{
-						Name = pathNodes[i],
-						LastWriteTime = DateTime.Now,
-					};
-					current.Files.Add(fileNode);
-					return fileNode;
-				}
+                for (int j = i; j < pathNodes.Length - 1; j++)
+                {
+                    DirectoryNode existingDirectory = current.Directories[pathNodes[i]];
+                    if (existingDirectory == null)
+                    {
+                        DirectoryNode newDirectory = new DirectoryNode(pathNodes[i], stringComparer)
+                        {
+                            LastWriteTime = DateTime.Now,
+                        };
+                        current.Directories.Add(newDirectory);
+                        current = newDirectory;
+                    }
+                    else
+                    {
+                        current = existingDirectory;
+                    }
+                }
 
-				return existingFile;
-			}
+                if (!isContextOfFile)
+                {
+                    DirectoryNode existingDirectory = current.Directories[pathNodes[i]];
+                    if (existingDirectory == null)
+                    {
+                        DirectoryNode newDirectory = new DirectoryNode(pathNodes[i], stringComparer)
+                        {
+                            LastWriteTime = DateTime.Now,
+                        };
+                        current.Directories.Add(newDirectory);
+                        return newDirectory;
+                    }
 
-			public static string[] ParsePath(string path)
-			{
-				List<string> pathNodes = new List<string>();
-				string tmp = new string(path.ToCharArray());
-				int indexOfDirectorySeparator = tmp.LastIndexOf(Path.DirectorySeparatorChar);
-				while (indexOfDirectorySeparator > 1)
-				{
-					string nodeName = tmp.Substring(indexOfDirectorySeparator + 1);
-					if (nodeName.Length > 0) pathNodes.Insert(0, nodeName);
-					tmp = tmp.Substring(0, indexOfDirectorySeparator);
-					indexOfDirectorySeparator = tmp.LastIndexOf(Path.DirectorySeparatorChar);
-				}
-				if (tmp.Length > 0) pathNodes.Insert(0, tmp);
-				return pathNodes.ToArray();
-			}
+                    return existingDirectory;
+                }
 
-			public static string GetParentPath(string path)
-			{
-				var pathNodes = ParsePath(path);
-				return string.Join(Path.DirectorySeparatorChar.ToString(), pathNodes.Take(pathNodes.Length - 1).ToArray());
-			}
-			public static string GetParentPath(string[] pathNodes)
-			{
-				return string.Join(Path.DirectorySeparatorChar.ToString(), pathNodes.Take(pathNodes.Length - 1).ToArray());
-			}
+                FileNode existingFile = current.Files[pathNodes[i]];
+                if (existingFile == null)
+                {
+                    FileNode fileNode = new FileNode
+                    {
+                        Name = pathNodes[i],
+                        LastWriteTime = DateTime.Now,
+                    };
+                    current.Files.Add(fileNode);
+                    return fileNode;
+                }
 
-		}
-	}
+                return existingFile;
+            }
+
+            public string GetParentPath(string path)
+            {
+                return GetParentPath(path, _directorySeparatorChar);
+            }
+
+            public string GetParentPath(string[] pathNodes)
+            {
+                return GetParentPath(pathNodes, _directorySeparatorChar);
+            }
+
+            public static string GetParentPath(string path, char directorySeparatorChar)
+            {
+                var pathNodes = FileSystemUtility.ParsePath(path, directorySeparatorChar);
+                return GetParentPath(pathNodes, directorySeparatorChar);
+            }
+            public static string GetParentPath(string[] pathNodes, char directorySeparatorChar)
+            {
+                if (directorySeparatorChar == '/' && pathNodes[0] == "/")
+                    return "/" + string.Join(directorySeparatorChar.ToString(), pathNodes.Skip(1).Take(pathNodes.Length - 2).ToArray());
+
+                return string.Join(directorySeparatorChar.ToString(), pathNodes.Take(pathNodes.Length - 1).ToArray());
+            }
+
+        }
+    }
 }

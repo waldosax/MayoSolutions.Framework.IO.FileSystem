@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MayoSolutions.Framework.IO.Extensions;
 
 namespace MayoSolutions.Framework.IO
 {
@@ -60,17 +61,56 @@ namespace MayoSolutions.Framework.IO
 
         public static string[] ParsePath(string path)
         {
+            return ParsePath(path, Path.DirectorySeparatorChar);
+        }
+
+        public static string[] ParsePath(string path, char directorySeparatorChar)
+        {
+            // *********************************
+            //      How first nodes are treated
+            // *********************************
+            //
+            // Windows
+            //  Volume
+            //      C:\
+            //  Mapped Drive
+            //      \\hostname\
+            //
+            // *NIX, MacOS
+            //  Root
+            //      /
+            //  Mapped Drive
+            //      //hostname/
+
             List<string> pathNodes = new List<string>();
-            string tmp = new string(path.ToCharArray());
-            int indexOfDirectorySeparator = tmp.LastIndexOf(Path.DirectorySeparatorChar);
-            while (indexOfDirectorySeparator > 1)
+            string tmp = path.TrimPath();
+
+            string uncIndicator = new string(directorySeparatorChar, 2);
+            bool isUncPath = tmp.StartsWith(uncIndicator);
+
+            int startIndex = 0;
+            int indexOfDirectorySeparator = tmp.IndexOf(directorySeparatorChar, isUncPath ? 2 : 0);
+            if (!isUncPath && directorySeparatorChar == '/' && indexOfDirectorySeparator == 0)
             {
-                string nodeName = tmp.Substring(indexOfDirectorySeparator + 1);
-                if (nodeName.Length > 0) pathNodes.Insert(0, nodeName);
-                tmp = tmp.Substring(0, indexOfDirectorySeparator);
-                indexOfDirectorySeparator = tmp.LastIndexOf(Path.DirectorySeparatorChar);
+                pathNodes.Add(directorySeparatorChar.ToString());
+                startIndex = 1;
+                indexOfDirectorySeparator = tmp.IndexOf(directorySeparatorChar, 1); ;
             }
-            if (tmp.Length > 0) pathNodes.Insert(0, tmp);
+
+            while (indexOfDirectorySeparator > startIndex)
+            {
+                var node = tmp.Substring(startIndex, indexOfDirectorySeparator - startIndex);
+                if (node.Length > 0) pathNodes.Add(node);
+                startIndex += node.Length + 1;
+                indexOfDirectorySeparator = tmp.IndexOf(directorySeparatorChar, startIndex);
+            }
+
+            if (startIndex < tmp.Length)
+            {
+                var node = tmp.Substring(startIndex);
+                pathNodes.Add(node);
+            }
+
             return pathNodes.ToArray();
         }
 

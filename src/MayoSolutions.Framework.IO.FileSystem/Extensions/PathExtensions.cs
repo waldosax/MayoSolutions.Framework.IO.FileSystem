@@ -6,6 +6,7 @@ namespace MayoSolutions.Framework.IO.Extensions
     {
         public static string TrimPath(this string path)
         {
+            if (path == "/") return path;
             return path?.TrimEnd(
                 Path.DirectorySeparatorChar,
                 Path.AltDirectorySeparatorChar
