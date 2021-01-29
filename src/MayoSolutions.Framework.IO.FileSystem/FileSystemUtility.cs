@@ -148,7 +148,7 @@ namespace MayoSolutions.Framework.IO
         {
             if (directorySeparatorChar == '/')
             {
-                if (path.IndexOf(Path.VolumeSeparatorChar) >= 0) path = path.Replace(Path.VolumeSeparatorChar.ToString(), "");
+                if (path.IndexOf(':') >= 0) path = path.Replace(":", "");
                 path = path.Replace('\\', '/');
                 if (path.IndexOf('/') != 0) path = "/" + path;
             }
