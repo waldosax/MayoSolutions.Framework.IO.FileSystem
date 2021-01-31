@@ -8,6 +8,7 @@ namespace MayoSolutions.Framework.IO
 {
     public static class FileSystemUtility
     {
+
         public static string[] GetAllFoldersBetween(string a, string b)
         {
             List<string> list = new List<string>();
