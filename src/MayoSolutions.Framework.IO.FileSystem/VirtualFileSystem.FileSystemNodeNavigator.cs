@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using MayoSolutions.Framework.IO.Extensions;
 
 namespace MayoSolutions.Framework.IO
@@ -11,10 +12,12 @@ namespace MayoSolutions.Framework.IO
     {
         protected class FileSystemNodeNavigator
         {
+            private readonly StringComparer _pathComparer;
             private readonly char _directorySeparatorChar;
 
-            internal FileSystemNodeNavigator(char directorySeparatorChar)
+            internal FileSystemNodeNavigator(StringComparer pathComparer, char directorySeparatorChar)
             {
+                _pathComparer = pathComparer;
                 _directorySeparatorChar = directorySeparatorChar;
             }
 
@@ -37,7 +40,7 @@ namespace MayoSolutions.Framework.IO
 
                 if (shouldCreate)
                 {
-                    VolumeNode volume = new VolumeNode(this, rootPathName, GetStringComparer(IsVolumeCaseSensitive(rootPathName)))
+                    VolumeNode volume = new VolumeNode(this, rootPathName, _pathComparer)
                     {
                         LastWriteTime = DateTime.Now
                     };

@@ -14,10 +14,16 @@ namespace MayoSolutions.Framework.IO
         public IDirectory Directory { get; }
         public IFile File { get; }
 
+        public OSPlatform Platform { get; }
+        public StringComparer PathComparer =>
+            Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+
+
         protected readonly List<VolumeNode> Volumes;
         protected readonly FileSystemNodeNavigator NodeNavigator;
         public readonly char DirectorySeparatorChar;
-        public readonly OSPlatform Platform;
 
         #region Meta
 
@@ -72,7 +78,7 @@ namespace MayoSolutions.Framework.IO
         {
             Platform = platform;
             DirectorySeparatorChar = platform != OSPlatform.Windows ?'/':'\\';
-            NodeNavigator = new FileSystemNodeNavigator(DirectorySeparatorChar);
+            NodeNavigator = new FileSystemNodeNavigator(PathComparer, DirectorySeparatorChar);
             
             Volumes = new List<VolumeNode>();
             if (platform != OSPlatform.Windows)

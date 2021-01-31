@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MayoSolutions.Framework.IO
@@ -152,6 +153,11 @@ namespace MayoSolutions.Framework.IO
 
         }
 
+        public OSPlatform Platform => OperatingSystem.Platform;
+        public StringComparer PathComparer =>
+            Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
 
         public IDrive Drive { get; }
         public IDirectory Directory { get; }
