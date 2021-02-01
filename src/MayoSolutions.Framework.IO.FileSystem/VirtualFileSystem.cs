@@ -19,11 +19,11 @@ namespace MayoSolutions.Framework.IO
             Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
                 ? StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal;
+        public char DirectorySeparatorChar { get; }
 
 
         protected readonly List<VolumeNode> Volumes;
         protected readonly FileSystemNodeNavigator NodeNavigator;
-        public readonly char DirectorySeparatorChar;
 
         #region Meta
 

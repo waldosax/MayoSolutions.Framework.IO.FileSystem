@@ -158,6 +158,7 @@ namespace MayoSolutions.Framework.IO
             Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
                 ? StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal;
+        public char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
         public IDrive Drive { get; }
         public IDirectory Directory { get; }
