@@ -1,14 +1,7 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace MayoSolutions.Framework.IO
+﻿namespace MayoSolutions.Framework.IO
 {
-    public interface IFileSystem
+    public interface IFileSystem : IFieSystemDescriptor
     {
-        OSPlatform Platform { get; }
-        StringComparer PathComparer { get; }
-        StringComparison StringComparison { get; }
-        char DirectorySeparatorChar { get; }
 
         IDrive Drive{ get; }
         IDirectory Directory { get; }
