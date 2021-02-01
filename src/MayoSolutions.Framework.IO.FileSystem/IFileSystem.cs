@@ -7,6 +7,7 @@ namespace MayoSolutions.Framework.IO
     {
         OSPlatform Platform { get; }
         StringComparer PathComparer { get; }
+        StringComparison StringComparison { get; }
         char DirectorySeparatorChar { get; }
 
         IDrive Drive{ get; }

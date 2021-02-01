@@ -16,9 +16,13 @@ namespace MayoSolutions.Framework.IO
 
         public OSPlatform Platform { get; }
         public StringComparer PathComparer =>
-            Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
+            StringComparison == StringComparison.OrdinalIgnoreCase
                 ? StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal;
+        public StringComparison StringComparison =>
+            Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
         public char DirectorySeparatorChar { get; }
 
 
