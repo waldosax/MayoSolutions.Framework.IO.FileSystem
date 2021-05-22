@@ -5,7 +5,7 @@
 		<Company>Mayo Solutions</Company>
 		<Authors>Rob Mayo</Authors>
 		<Description>Abstractions for Filesystem</Description>
-		<Version>0.0.27</Version>
+		<Version>0.0.28</Version>
 		<PackageVersion>$(VersionSuffix)</PackageVersion>
 		<PackageId>MayoSolutions.Framework.IO.FileSystem</PackageId>
 		<Title>MayoSolutions.Framework.IO.FileSystem</Title>
@@ -23,7 +23,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="10.2.1" />
-		<PackageReference Include="MayoSolutions.Common" Version="0.0.16" />
+		<PackageReference Include="MayoSolutions.Common" Version="0.0.17" />
 	</ItemGroup>
 
 	<ItemGroup>
