@@ -5,7 +5,7 @@
 		<Company>Mayo Solutions</Company>
 		<Authors>Rob Mayo</Authors>
 		<Description>Abstractions for Filesystem</Description>
-		<Version>0.0.29</Version>
+		<Version>0.1.0</Version>
 		<PackageVersion>$(VersionSuffix)</PackageVersion>
 		<PackageId>MayoSolutions.Framework.IO.FileSystem</PackageId>
 		<Title>MayoSolutions.Framework.IO.FileSystem</Title>
@@ -24,11 +24,18 @@
 	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="10.2.1" />
 		<PackageReference Include="MayoSolutions.Common" Version="0.0.17" />
+		<PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Compile Update="VirtualFileSystem.*.cs">
 			<DependentUpon>VirtualFileSystem.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="LiveVirtualFileSystem.*.cs">
+			<DependentUpon>LiveVirtualFileSystem.cs</DependentUpon>
 		</Compile>
 	</ItemGroup>
 </Project>

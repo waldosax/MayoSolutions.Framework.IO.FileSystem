@@ -30,16 +30,16 @@ namespace MayoSolutions.Framework.IO
                 return GetOrCreateInternal(volumes, path, true, createFile);
             }
 
-            public VolumeNode GetOrCreateVolume(List<VolumeNode> volumes, string rootPathName, bool shouldCreate)
+            public VolumeNode GetOrCreateVolume(List<VolumeNode> volumes, VolumeInfo volumeInfo, bool shouldCreate)
             {
                 foreach (VolumeNode volume in volumes)
                 {
-                    if (volume.StringComparer.Equals(volume.Name, rootPathName)) return volume;
+                    if (volume.StringComparer.Equals(volume.Name, volumeInfo.RootPathName)) return volume;
                 }
 
                 if (shouldCreate)
                 {
-                    VolumeNode volume = new VolumeNode(this, rootPathName, _pathComparer)
+                    VolumeNode volume = new VolumeNode(this, volumeInfo)
                     {
                         LastWriteTime = DateTime.Now
                     };
@@ -48,6 +48,16 @@ namespace MayoSolutions.Framework.IO
                 }
 
                 return null;
+            }
+            public VolumeNode GetOrCreateVolume(List<VolumeNode> volumes, string rootPathName, bool shouldCreate)
+            {
+                return GetOrCreateVolume(volumes, new VolumeInfo
+                {
+                    RootPathName = rootPathName,
+                    DriveType = DriveType.Fixed,
+                    DriveFormat = "NTFS",
+                    IsReady = true
+                }, shouldCreate);
             }
 
             private FileSystemNode GetOrCreateInternal(List<VolumeNode> volumes, string path, bool shouldCreate, bool isContextOfFile)

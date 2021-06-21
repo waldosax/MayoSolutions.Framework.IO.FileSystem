@@ -10,11 +10,11 @@ namespace MayoSolutions.Framework.IO
     // NOTE: Somebody got their recursion hard-on! Oh, wait. It was me.
     public partial class VirtualFileSystem : IFileSystem
     {
-        public IDrive Drive { get; }
-        public IDirectory Directory { get; }
-        public IFile File { get; }
+        public IDrive Drive { get; protected set; }
+        public IDirectory Directory { get; protected set; }
+        public IFile File { get; protected set; }
 
-        public OSPlatform Platform { get; }
+        public OSPlatform Platform { get; protected set; }
         public StringComparer PathComparer =>
             StringComparison == StringComparison.OrdinalIgnoreCase
                 ? StringComparer.OrdinalIgnoreCase
@@ -23,11 +23,11 @@ namespace MayoSolutions.Framework.IO
             Platform == OSPlatform.Windows || Platform == OSPlatform.OSX
                 ? StringComparison.OrdinalIgnoreCase
                 : StringComparison.Ordinal;
-        public char DirectorySeparatorChar { get; }
+        public char DirectorySeparatorChar { get; protected set; }
 
 
-        protected readonly List<VolumeNode> Volumes;
-        protected readonly FileSystemNodeNavigator NodeNavigator;
+        protected List<VolumeNode> Volumes;
+        protected FileSystemNodeNavigator NodeNavigator;
 
         #region Meta
 
@@ -66,11 +66,6 @@ namespace MayoSolutions.Framework.IO
             return IsOperatingSystemCaseSensitive();
         }
 
-        private static StringComparer GetStringComparer(bool caseSensitive)
-        {
-            return caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
-        }
-
         #endregion
 
         public VirtualFileSystem()
@@ -79,6 +74,11 @@ namespace MayoSolutions.Framework.IO
         }
 
         public VirtualFileSystem(OSPlatform platform)
+        {
+            CreateInternal(platform);
+        }
+
+        protected internal void CreateInternal(OSPlatform platform)
         {
             Platform = platform;
             DirectorySeparatorChar = platform != OSPlatform.Windows ?'/':'\\';
@@ -119,25 +119,25 @@ namespace MayoSolutions.Framework.IO
             }
             return this;
         }
-        public virtual VirtualFileSystem WithFile(string path, DateTime? lastWriteTime = null)
+        public virtual VirtualFileSystem WithFile(string path, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
-            return WithFileInternal(path, null, lastWriteTime);
+            return WithFileInternal(path, null, creationTime, lastWriteTime);
         }
 
-        public virtual VirtualFileSystem WithFile(string path, string contents, DateTime? lastWriteTime = null)
+        public virtual VirtualFileSystem WithFile(string path, string contents, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
-            return WithFile(path, contents, Encoding.Default, lastWriteTime);
+            return WithFile(path, contents, Encoding.Default, creationTime, lastWriteTime);
         }
-        public virtual VirtualFileSystem WithFile(string path, string contents, Encoding encoding, DateTime? lastWriteTime = null)
+        public virtual VirtualFileSystem WithFile(string path, string contents, Encoding encoding, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
-            return WithFileInternal(path, encoding.GetBytes(contents), lastWriteTime);
+            return WithFileInternal(path, encoding.GetBytes(contents), creationTime, lastWriteTime);
         }
-        public virtual VirtualFileSystem WithFile(string path, byte[] contents, DateTime? lastWriteTime = null)
+        public virtual VirtualFileSystem WithFile(string path, byte[] contents, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
-            return WithFileInternal(path, contents, lastWriteTime);
+            return WithFileInternal(path, contents, creationTime, lastWriteTime);
         }
 
-        private VirtualFileSystem WithFileInternal(string path, byte[] contents, DateTime? lastWriteTime = null)
+        private VirtualFileSystem WithFileInternal(string path, byte[] contents, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
             VirtualFileSystem vfs = this;
 
@@ -155,6 +155,7 @@ namespace MayoSolutions.Framework.IO
                 {
                     Name = fileName,
                     Contents = contents ?? new byte[0],
+                    CreationTime = creationTime ?? DateTime.Now,
                     LastWriteTime = lastWriteTime ?? DateTime.Now,
                 };
                 parent.Files.Add(fileNode);
@@ -168,21 +169,21 @@ namespace MayoSolutions.Framework.IO
             return CreatePathInternal(path, true);
         }
 
-        public static VirtualFileSystem WithPath(string path)
+        public static VirtualFileSystem WithPath(string path, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
             VirtualFileSystem vfs = new VirtualFileSystem();
 
-            vfs = vfs.AndPath(path);
+            vfs = vfs.AndPath(path, creationTime, lastWriteTime);
 
             return vfs;
         }
 
-        public virtual VirtualFileSystem AndPath(string path)
+        public virtual VirtualFileSystem AndPath(string path, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
-            return CreatePathInternal(path, false);
+            return CreatePathInternal(path, false, creationTime, lastWriteTime);
         }
 
-        private VirtualFileSystem CreatePathInternal(string path, bool createChildrenFromPhysicalPath)
+        private VirtualFileSystem CreatePathInternal(string path, bool createChildrenFromPhysicalPath, DateTime? creationTime = null, DateTime? lastWriteTime = null)
         {
             VirtualFileSystem vfs = this;
 
@@ -204,7 +205,8 @@ namespace MayoSolutions.Framework.IO
                 {
                     DirectoryNode current = new DirectoryNode(NodeNavigator, pathNodes[i], stringComparer)
                     {
-                        LastWriteTime = createChildrenFromPhysicalPath ? new DirectoryInfo(fullName).LastWriteTime: DateTime.Now,
+                        CreationTime = createChildrenFromPhysicalPath ? new DirectoryInfo(fullName).CreationTime: creationTime?.ToLocalTime() ?? DateTime.Now,
+                        LastWriteTime = createChildrenFromPhysicalPath ? new DirectoryInfo(fullName).LastWriteTime: lastWriteTime?.ToLocalTime() ?? DateTime.Now,
                     };
                     parent.Directories.Add(current);
                     parent = current;

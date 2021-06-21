@@ -9,7 +9,7 @@ namespace MayoSolutions.Framework.IO
         protected class RootNode : VolumeNode
         {
             public RootNode(FileSystemNodeNavigator nodeNavigator)
-                : base(nodeNavigator, new VolumeInfo
+                : base(nodeNavigator, new VolumeInfo    // TODO: Default VolumeInfo
                 {
                     IsCaseSensitive = true,
                     DriveType = DriveType.NoRootDirectory,
