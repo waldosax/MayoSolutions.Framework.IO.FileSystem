@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using MayoSolutions.Framework.IO.Extensions;
 
 namespace MayoSolutions.Framework.IO
@@ -96,12 +95,13 @@ namespace MayoSolutions.Framework.IO
 
                 if (!shouldCreate) return null;
 
-                for (int j = i; j < pathNodes.Length - 1; j++)
+                for (int j = i; j < pathNodes.Length - 1; j++,i=j)
                 {
-                    DirectoryNode existingDirectory = current.Directories[pathNodes[i]];
+                    var directoryName = pathNodes[j];
+                    DirectoryNode existingDirectory = current.Directories[directoryName];
                     if (existingDirectory == null)
                     {
-                        DirectoryNode newDirectory = new DirectoryNode(this, pathNodes[i], stringComparer)
+                        DirectoryNode newDirectory = new DirectoryNode(this, directoryName, stringComparer)
                         {
                             LastWriteTime = DateTime.Now,
                         };
@@ -116,10 +116,11 @@ namespace MayoSolutions.Framework.IO
 
                 if (!isContextOfFile)
                 {
-                    DirectoryNode existingDirectory = current.Directories[pathNodes[i]];
+                    var directoryName = pathNodes[i];
+                    DirectoryNode existingDirectory = current.Directories[directoryName];
                     if (existingDirectory == null)
                     {
-                        DirectoryNode newDirectory = new DirectoryNode(this, pathNodes[i], stringComparer)
+                        DirectoryNode newDirectory = new DirectoryNode(this, directoryName, stringComparer)
                         {
                             LastWriteTime = DateTime.Now,
                         };
@@ -130,12 +131,13 @@ namespace MayoSolutions.Framework.IO
                     return existingDirectory;
                 }
 
-                FileNode existingFile = current.Files[pathNodes[i]];
+                var fileName = pathNodes[i];
+                FileNode existingFile = current.Files[fileName];
                 if (existingFile == null)
                 {
                     FileNode fileNode = new FileNode(this)
                     {
-                        Name = pathNodes[i],
+                        Name = fileName,
                         LastWriteTime = DateTime.Now,
                     };
                     current.Files.Add(fileNode);
@@ -156,8 +158,8 @@ namespace MayoSolutions.Framework.IO
                 }
 
                 var firstNode = nodes[0];
-                if (firstNode is RootNode) return "/" + string.Join(_directorySeparatorChar.ToString(), (string[])nodes.Skip(1).Take(nodes.Count-1).Select(nd => nd.Name).ToArray());
-                return string.Join(_directorySeparatorChar.ToString(), (string[])nodes.Take(nodes.Count).Select(nd => nd.Name).ToArray());
+                if (firstNode is RootNode) return "/" + string.Join(_directorySeparatorChar.ToString(), nodes.Skip(1).Take(nodes.Count-1).Select(nd => nd.Name).ToArray());
+                return string.Join(_directorySeparatorChar.ToString(), nodes.Take(nodes.Count).Select(nd => nd.Name).ToArray());
             }
             public string GetFullPath(string path)
             {
