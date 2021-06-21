@@ -23,26 +23,6 @@ namespace MayoSolutions.Framework.IO
             {
                 VolumeInfo = volumeInfo;
             }
-
-            public VolumeNode(
-                FileSystemNodeNavigator nodeNavigator,
-                string name, 
-                StringComparer stringComparer)
-                : base(nodeNavigator, name, stringComparer)
-            {
-                VolumeInfo = new VolumeInfo
-                {
-                    RootPathName = name,
-                    IsCaseSensitive = (
-                        stringComparer == StringComparer.CurrentCulture ||
-                        stringComparer == StringComparer.InvariantCulture ||
-                        stringComparer == StringComparer.Ordinal
-                            ),
-                    DriveType = DriveType.Fixed,
-                    DriveFormat = "NTFS",
-                    IsReady = true
-                };
-            }
         }
     }
 }

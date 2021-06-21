@@ -1,0 +1,60 @@
+{
+  "Platform": "Linux",
+  "Volumes": [
+    {
+      "Name": "/", 
+      "VolumeInfo": {},
+      "Directories": [
+        {
+          "Name": "_TorrentCache",
+          "Directories": [
+            {
+              "Name": "_Completed",
+              "Directories": [
+                {
+                  "Name": "TV",
+                  "Directories": [
+                    {
+                      "Name": "Murphy Brown",
+                      "Directories": [
+                        {
+                          "Name": "murphy.brown.s01e06.xVid",
+                          "Directories": [
+                            {
+                              "Name": "Subs",
+                              "Files": [
+                                {
+                                  "Name": "02_English.srt"
+                                },
+                                {
+                                  "Name": "03_English.srt"
+                                },
+                                {
+                                  "Name": "04_German.srt"
+                                }
+                              ]
+                            }
+                          ],
+                          "Files": [
+                            {
+                              "Name": "murphy.brown.s01e06.xVid.mp4"
+                            }
+                          ]
+                        }
+                      ],
+                      "Files": []
+                    }
+                  ],
+                  "Files": []
+                }
+              ],
+              "Files": []
+            }
+          ],
+          "Files": []
+        }
+      ],
+      "Files": []
+    }
+  ]
+}
