@@ -15,7 +15,7 @@ namespace MayoSolutions.Framework.IO
             public ChildList<FileNode> Files { get; }
 
             protected ContainerNode(FileSystemNodeNavigator nodeNavigator, string name, StringComparer stringComparer, DateTime? creationTimeUtc = null)
-            :base(nodeNavigator, creationTimeUtc)
+            : base(nodeNavigator, creationTimeUtc)
             {
                 StringComparer = stringComparer;
                 Directories = new ChildList<DirectoryNode>(this);
@@ -26,6 +26,7 @@ namespace MayoSolutions.Framework.IO
             public class ChildList<T> : List<T>
                 where T : FileSystemNode
             {
+                protected readonly object SyncLock = new object();
                 private readonly ContainerNode _parent;
 
                 public ChildList(ContainerNode parent)
@@ -52,20 +53,29 @@ namespace MayoSolutions.Framework.IO
 
                 public new void Add(T item)
                 {
-                    item.Parent = _parent;
-                    base.Add(item);
+                    lock (SyncLock)
+                    {
+                        item.Parent = _parent;
+                        base.Add(item);
+                    }
                 }
 
                 public void Remove(string name)
                 {
-                    T item = Find(name);
-                    if (item != null) Remove(item);
+                    lock (SyncLock)
+                    {
+                        T item = Find(name);
+                        if (item != null) Remove(item);
+                    }
                 }
 
                 public new void Remove(T item)
                 {
-                    item.Parent = null;
-                    base.Remove(item);
+                    lock (SyncLock)
+                    {
+                        item.Parent = null;
+                        base.Remove(item);
+                    }
                 }
 
                 public bool Contains(string name)
