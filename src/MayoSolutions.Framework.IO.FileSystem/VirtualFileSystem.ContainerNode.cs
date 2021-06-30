@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace MayoSolutions.Framework.IO
@@ -34,7 +35,17 @@ namespace MayoSolutions.Framework.IO
 
                 private T Find(string name)
                 {
-                    return this.SingleOrDefault(x => _parent.StringComparer.Equals(x.Name, name));
+                    Func<T, bool> predicate = x => _parent.StringComparer.Equals(x.Name, name);
+                    Debug.Assert(this.Count(predicate) <= 1, $"More than one element found for '{name}' in '{_parent.FullName}'.");
+                    try
+                    {
+                        return this.SingleOrDefault(predicate);
+                        //return this.FirstOrDefault(predicate);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        throw new InvalidOperationException($"More than one element found for '{name}' in '{_parent.FullName}'.", e);
+                    }
                 }
 
                 public T this[string name] => Find(name);
