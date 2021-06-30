@@ -97,8 +97,11 @@ namespace MayoSolutions.Framework.IO
                     if (destDirectory != null) throw new IOException("Cannot create a file when that file already exists.");
 
                     destDirectory = srcDirectory;
-                    srcParent.Directories.Remove(srcDirectory);
-                    destParent.Directories.Add(srcDirectory);
+                    lock (destParent.Directories.SyncLock)
+                    {
+                        srcParent.Directories.Remove(srcDirectory);
+                        destParent.Directories.Add(srcDirectory);
+                    }
                     destDirectory.Name = dest;
                 }
             }
