@@ -26,7 +26,7 @@ namespace MayoSolutions.Framework.IO
             public class ChildList<T> : List<T>
                 where T : FileSystemNode
             {
-                protected readonly object SyncLock = new object();
+                internal readonly object SyncLock = new object();
                 private readonly ContainerNode _parent;
 
                 public ChildList(ContainerNode parent)
@@ -36,17 +36,25 @@ namespace MayoSolutions.Framework.IO
 
                 private T Find(string name)
                 {
-                    Func<T, bool> predicate = x => _parent.StringComparer.Equals(x.Name, name);
-                    Debug.Assert(this.Count(predicate) <= 1, $"More than one element found for '{name}' in '{_parent.FullName}'.");
-                    try
+                    lock (SyncLock)
                     {
-                        return this.SingleOrDefault(predicate);
-                        //return this.FirstOrDefault(predicate);
+                        Func<T, bool> predicate = GetFindPredicate(_parent, name);
+                        Debug.Assert(this.Count(predicate) <= 1, $"More than one element found for '{name}' in '{_parent.FullName}'.");
+                        try
+                        {
+                            return this.SingleOrDefault(predicate);
+                            //return this.FirstOrDefault(predicate);
+                        }
+                        catch (InvalidOperationException e)
+                        {
+                            throw new InvalidOperationException($"More than one element found for '{name}' in '{_parent.FullName}'.", e);
+                        }
                     }
-                    catch (InvalidOperationException e)
-                    {
-                        throw new InvalidOperationException($"More than one element found for '{name}' in '{_parent.FullName}'.", e);
-                    }
+                }
+
+                private Func<T, bool> GetFindPredicate(ContainerNode parent, string name)
+                {
+                    return x => parent.StringComparer.Equals(x.Name, name);
                 }
 
                 public T this[string name] => Find(name);

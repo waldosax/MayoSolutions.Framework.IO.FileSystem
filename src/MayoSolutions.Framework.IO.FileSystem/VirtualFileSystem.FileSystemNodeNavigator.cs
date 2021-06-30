@@ -62,7 +62,8 @@ namespace MayoSolutions.Framework.IO
 
             private FileSystemNode GetOrCreateInternal(List<VolumeNode> volumes, string path, bool shouldCreate, bool isContextOfFile)
             {
-                if (_directorySeparatorChar == '\\') { 
+                if (_directorySeparatorChar == '\\')
+                {
                     if (!isContextOfFile) { path = path.TrimPath() + _directorySeparatorChar; }
                     path = Path.GetFullPath(path);
                 }
@@ -105,7 +106,7 @@ namespace MayoSolutions.Framework.IO
 
                 if (!shouldCreate) return null;
 
-                for (int j = i; j < pathNodes.Length - 1; j++,i=j)
+                for (int j = i; j < pathNodes.Length - 1; j++, i = j)
                 {
                     var directoryName = pathNodes[j];
                     DirectoryNode existingDirectory = current.Directories[directoryName];
@@ -127,39 +128,45 @@ namespace MayoSolutions.Framework.IO
                 if (!isContextOfFile)
                 {
                     var directoryName = pathNodes[i];
-                    DirectoryNode existingDirectory = current.Directories[directoryName];
-                    if (existingDirectory == null)
+                    lock (current.Directories.SyncLock)
                     {
-                        DirectoryNode newDirectory = new DirectoryNode(this, directoryName, stringComparer)
+                        DirectoryNode existingDirectory = current.Directories[directoryName];
+                        if (existingDirectory == null)
                         {
-                            LastWriteTime = DateTime.Now,
-                        };
-                        current.Directories.Add(newDirectory);
-                        return newDirectory;
-                    }
+                            DirectoryNode newDirectory = new DirectoryNode(this, directoryName, stringComparer)
+                            {
+                                LastWriteTime = DateTime.Now,
+                            };
+                            current.Directories.Add(newDirectory);
+                            return newDirectory;
+                        }
 
-                    return existingDirectory;
+                        return existingDirectory;
+                    }
                 }
 
                 var fileName = pathNodes[i];
-                FileNode existingFile = current.Files[fileName];
-                if (existingFile == null)
+                lock (current.Files.SyncLock)
                 {
-                    FileNode fileNode = new FileNode(this)
+                    FileNode existingFile = current.Files[fileName];
+                    if (existingFile == null)
                     {
-                        Name = fileName,
-                        LastWriteTime = DateTime.Now,
-                    };
-                    current.Files.Add(fileNode);
-                    return fileNode;
-                }
+                        FileNode fileNode = new FileNode(this)
+                        {
+                            Name = fileName,
+                            LastWriteTime = DateTime.Now,
+                        };
+                        current.Files.Add(fileNode);
+                        return fileNode;
+                    }
 
-                return existingFile;
+                    return existingFile;
+                }
             }
 
             public string GetFullPath(FileSystemNode node)
             {
-                List<FileSystemNode> nodes = new List<FileSystemNode> {node};
+                List<FileSystemNode> nodes = new List<FileSystemNode> { node };
                 var current = node;
                 while (current.Parent != null)
                 {
@@ -168,7 +175,7 @@ namespace MayoSolutions.Framework.IO
                 }
 
                 var firstNode = nodes[0];
-                if (firstNode is RootNode) return "/" + string.Join(_directorySeparatorChar.ToString(), nodes.Skip(1).Take(nodes.Count-1).Select(nd => nd.Name).ToArray());
+                if (firstNode is RootNode) return "/" + string.Join(_directorySeparatorChar.ToString(), nodes.Skip(1).Take(nodes.Count - 1).Select(nd => nd.Name).ToArray());
                 return string.Join(_directorySeparatorChar.ToString(), nodes.Take(nodes.Count).Select(nd => nd.Name).ToArray());
             }
             public string GetFullPath(string path)
